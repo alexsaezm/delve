@@ -310,12 +310,15 @@ func (dbp *nativeProcess) initialize(path string, debugInfoDirs []string) (*proc
 		// We disable asyncpreempt for the following reasons:
 		//  - on Windows asyncpreempt is incompatible with debuggers, see:
 		//    https://github.com/golang/go/issues/36494
+		//  - freebsd's backend is generally broken and asyncpreempt makes it even more so, see:
+		//    https://github.com/go-delve/delve/issues/1754
 		//  - on linux/arm64 asyncpreempt can sometimes restart a sequence of
 		//    instructions, if the sequence happens to contain a breakpoint it will
 		//    look like the breakpoint was hit twice when it was "logically" only
 		//    executed once.
 		//    See: https://go-review.googlesource.com/c/go/+/208126
-		DisableAsyncPreempt: runtime.GOOS == "windows" || (runtime.GOOS == "linux" && runtime.GOARCH == "arm64"),
+		// TODO(alexsaezm) Verify if I need to disable it for ppc64le too
+		DisableAsyncPreempt: runtime.GOOS == "windows" || runtime.GOOS == "freebsd" || (runtime.GOOS == "linux" && runtime.GOARCH == "arm64"),
 
 		StopReason: stopReason,
 		CanDump:    runtime.GOOS == "linux" || runtime.GOOS == "freebsd" || (runtime.GOOS == "windows" && runtime.GOARCH == "amd64"),
@@ -325,6 +328,7 @@ func (dbp *nativeProcess) initialize(path string, debugInfoDirs []string) (*proc
 	if err != nil {
 		return nil, err
 	}
+	// TODO(alexsaezm) Verify if I need to run IsCgo for ppc64le too
 	if dbp.bi.Arch.Name == "arm64" {
 		dbp.iscgo = tgt.IsCgo()
 	}
