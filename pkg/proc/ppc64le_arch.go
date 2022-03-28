@@ -10,9 +10,9 @@ import (
 	"github.com/go-delve/delve/pkg/dwarf/regnum"
 )
 
-//var ppc64leBreakInstruction = []byte{0xfc, 0x00, 0x07, 0xfe}
-
-var ppc64leBreakInstruction = []byte{0x0, 0x0, 0x20, 0xd4} // TODO(alexsaezm) Verify if this is the correct break instruction
+// This is the unconditional trap, the same mnemonic that both clang and gcc use
+// It's documented in Section C.6 Trap Mnemonics in the Power ISA Book 3
+var ppc64leBreakInstruction = []byte{0x08, 0x00, 0xe0, 0x7d}
 
 func PPC64LEArch(goos string) *Arch {
 	return &Arch{
