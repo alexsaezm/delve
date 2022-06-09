@@ -12,7 +12,7 @@ import (
 
 // This is the unconditional trap, the same mnemonic that both clang and gcc use
 // It's documented in Section C.6 Trap Mnemonics in the Power ISA Book 3
-var ppc64leBreakInstruction = []byte{0x08, 0x00, 0xe0, 0x7d}
+var ppc64leBreakInstruction = []byte{0x08, 0x00, 0xe0, 0x7f}
 
 func PPC64LEArch(goos string) *Arch {
 	return &Arch{

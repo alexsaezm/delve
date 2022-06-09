@@ -77,6 +77,16 @@ func (r *PPC64LERegisters) SP() uint64 {
 	return r.Regs.Gpr[1]
 }
 
+// LR The Link Register is a 64-bit register. It can be
+// used to provide the branch target address for the
+// Branch Conditional to Link Register instruction, and it
+// holds the return address after Branch instructions for
+// which LK=1 and after System Call Vectored instructions.
+// Extracted from the 2.3.2 section of the PowerISA Book 3.1
+func (r *PPC64LERegisters) LR() uint64 {
+	panic("LR unimplemented method in regs_ppc64le_arch.go")
+}
+
 func (r *PPC64LERegisters) BP() uint64 {
 	return r.Regs.Gpr[30]
 }
