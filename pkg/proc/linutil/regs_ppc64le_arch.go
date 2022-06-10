@@ -39,8 +39,8 @@ type PPC64LEPtraceRegs struct {
 	//SP  uint64 // SP pointer r[1]
 	//TOC uint64 // TOC pointer -- r[2]
 	//TLS uint64 // Thread pointer -- r[13]
-	//LR  uint64 // Link register -> TODO(alexsaezm) LLDB dwarf_lr_ppc64le = 65
-	//CTR uint64 // Loop count register // TODO(alexsaezm) LLDB dwarf_ctr_ppc64le = 66
+	LR  uint64 // Link register -- LLDB dwarf_lr_ppc64le = 65
+	CTR uint64 // Loop count register -- LLDB dwarf_ctr_ppc64le = 66
 	//XER uint64 // Fixed point exception register // TODO(alexsaezm) LLDB dwarf_xer_ppc64le = 76
 }
 
@@ -83,7 +83,7 @@ func (r *PPC64LERegisters) SP() uint64 {
 // which LK=1 and after System Call Vectored instructions.
 // Extracted from the 2.3.2 section of the PowerISA Book 3.1
 func (r *PPC64LERegisters) LR() uint64 {
-	panic("LR unimplemented method in regs_ppc64le_arch.go")
+	return r.Regs.LR
 }
 
 func (r *PPC64LERegisters) BP() uint64 {
@@ -139,11 +139,11 @@ func (r *PPC64LERegisters) Slice(floatingPoint bool) ([]proc.Register, error) {
 		{"R30", r.Regs.Gpr[30]},
 		{"R31", r.Regs.Gpr[31]},
 		{"NIP", r.Regs.Nip},
-		//{"SP", r.Regs.SP},
-		//{"TOC", r.Regs.TOC},
-		//{"TLS", r.Regs.TLS},
-		//{"LR", r.Regs.LR},
-		//{"CTR", r.Regs.CTR},
+		{"SP", r.Regs.Gpr[1]},
+		{"TOC", r.Regs.Gpr[2]},
+		{"TLS", r.Regs.Gpr[13]},
+		{"LR", r.Regs.LR},
+		{"CTR", r.Regs.CTR},
 	}
 	out := make([]proc.Register, 0, len(regs)+len(r.Fpregs))
 	for _, reg := range regs {
