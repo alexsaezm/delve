@@ -10,7 +10,6 @@ const (
 	PPC64LE_CR0 = 0  // Condition Registers: from CR0 to CR7
 	PPC64LE_SP  = 1  // Stack frame pointer: Gpr[1]
 	PPC64LE_PC  = 12 // The documentation refers to this as the CIA (Current Instruction Address)
-	PPC64LE_BP  = 30 // TODO(alexsaezm) No idea where the BP is
 	PPC64LE_LR  = 65 // TODO(alexsaezm) What is this?
 )
 
@@ -42,7 +41,6 @@ var PPC64LENameToDwarf = func() map[string]int {
 
 	r["nip"] = PPC64LE_PC
 	r["sp"] = PPC64LE_SP
-	r["bp"] = PPC64LE_BP
 	r["lr"] = PPC64LE_LR
 
 	// General Purpose Registers: from R0 to R31

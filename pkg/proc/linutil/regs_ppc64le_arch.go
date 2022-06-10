@@ -39,7 +39,6 @@ type PPC64LEPtraceRegs struct {
 	//SP  uint64 // SP pointer r[1]
 	//TOC uint64 // TOC pointer -- r[2]
 	//TLS uint64 // Thread pointer -- r[13]
-	//BP  uint64 // Base pointer -- r[30] // TODO(alexsaezm) Check this
 	//LR  uint64 // Link register -> TODO(alexsaezm) LLDB dwarf_lr_ppc64le = 65
 	//CTR uint64 // Loop count register // TODO(alexsaezm) LLDB dwarf_ctr_ppc64le = 66
 	//XER uint64 // Fixed point exception register // TODO(alexsaezm) LLDB dwarf_xer_ppc64le = 76
@@ -143,7 +142,6 @@ func (r *PPC64LERegisters) Slice(floatingPoint bool) ([]proc.Register, error) {
 		//{"SP", r.Regs.SP},
 		//{"TOC", r.Regs.TOC},
 		//{"TLS", r.Regs.TLS},
-		//{"BR", r.Regs.BP},
 		//{"LR", r.Regs.LR},
 		//{"CTR", r.Regs.CTR},
 	}

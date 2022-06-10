@@ -34,7 +34,6 @@ func PPC64LEArch(goos string) *Arch {
 		usesLR:                           true,
 		PCRegNum:                         regnum.PPC64LE_PC,
 		SPRegNum:                         regnum.PPC64LE_SP,
-		BPRegNum:                         regnum.PPC64LE_BP,
 		asmRegisters:                     ppc64leAsmRegisters,
 		RegisterNameToDwarf:              nameToDwarfFunc(regnum.PPC64LENameToDwarf),
 	}
@@ -62,11 +61,6 @@ func ppc64leFixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Bina
 					Offset: 0,
 				},
 			},
-			CFA: frame.DWRule{
-				Rule:   frame.RuleCFA,
-				Reg:    regnum.PPC64LE_BP,
-				Offset: int64(2 * a.PtrSize()),
-			},
 		}
 	}
 	if a.crosscall2fn == nil {
@@ -82,18 +76,6 @@ func ppc64leFixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Bina
 			rule.Offset += crosscall2SPOffset
 		}
 		fctxt.CFA = rule
-	}
-	//We assume that RBP is the frame pointer, and we want to keep it updated,
-	//so that we can use it to unwind the stack even when we encounter frames
-	//without descriptor entries.
-	//If there isn't a rule already we emit one.
-	//FIXME(alexsaezm) I think this section of code doesn't apply to ppc64le, but not sure why
-	if fctxt.Regs[regnum.PPC64LE_BP].Rule == frame.RuleUndefined {
-		fctxt.Regs[regnum.PPC64LE_BP] = frame.DWRule{
-			Rule:   frame.RuleFramePointer,
-			Reg:    regnum.PPC64LE_BP,
-			Offset: 0,
-		}
 	}
 	if fctxt.Regs[regnum.PPC64LE_LR].Rule == frame.RuleUndefined {
 		fctxt.Regs[regnum.PPC64LE_LR] = frame.DWRule{
@@ -216,7 +198,7 @@ func ppc64leRegSize(rn uint64) int {
 
 func ppc64leRegistersToDwarfRegisters(staticBase uint64, regs Registers) *op.DwarfRegisters {
 	dregs := initDwarfRegistersFromSlice(int(regnum.PPC64LEMaxRegNum()), regs, regnum.PPC64LENameToDwarf)
-	dr := op.NewDwarfRegisters(staticBase, dregs, binary.LittleEndian, regnum.PPC64LE_PC, regnum.PPC64LE_SP, regnum.PPC64LE_BP, regnum.PPC64LE_LR)
+	dr := op.NewDwarfRegisters(staticBase, dregs, binary.LittleEndian, regnum.PPC64LE_PC, regnum.PPC64LE_SP, 0, regnum.PPC64LE_LR)
 	dr.SetLoadMoreCallback(loadMoreDwarfRegistersFromSliceFunc(dr, regs, regnum.PPC64LENameToDwarf))
 	return dr
 }
