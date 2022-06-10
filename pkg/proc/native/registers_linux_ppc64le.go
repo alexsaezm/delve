@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	_PPC64LE_GPREGS_SIZE = 44 * 8   // TODO(alexsaezm) Review _PPC64LE_GPREGS_SIZE's value
-	_PPC64LE_FPREGS_SIZE = 34 + 8*8 // TODO(alexsaezm) Review _PPC64LE_FPREGS_SIZE's value
+	_PPC64LE_GPREGS_SIZE = 34 * 8   // TODO(alexsaezm) Review _PPC64LE_GPREGS_SIZE's value
+	_PPC64LE_FPREGS_SIZE = 32*8 + 8 // TODO(alexsaezm) Review _PPC64LE_FPREGS_SIZE's value
 )
 
 func ptraceGetGRegs(pid int, regs *linutil.PPC64LEPtraceRegs) (err error) {
