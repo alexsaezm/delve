@@ -204,7 +204,12 @@ func ppc64leRegistersToDwarfRegisters(staticBase uint64, regs Registers) *op.Dwa
 }
 
 func ppc64leAddrAndStackRegsToDwarfRegisters(staticBase, pc, sp, bp, lr uint64) op.DwarfRegisters {
-	panic("ppc64leAddrAndStackRegsToDwarfRegisters")
+	dregs := make([]*op.DwarfRegister, regnum.PPC64LE_PC+1)
+	dregs[regnum.PPC64LE_PC] = op.DwarfRegisterFromUint64(pc)
+	dregs[regnum.PPC64LE_SP] = op.DwarfRegisterFromUint64(sp)
+	dregs[regnum.PPC64LE_LR] = op.DwarfRegisterFromUint64(lr)
+
+	return *op.NewDwarfRegisters(staticBase, dregs, binary.LittleEndian, regnum.PPC64LE_PC, regnum.PPC64LE_SP, 0, regnum.PPC64LE_LR)
 }
 
 func ppc64leDwarfRegisterToString(i int, reg *op.DwarfRegister) (name string, floatingPoint bool, repr string) {
