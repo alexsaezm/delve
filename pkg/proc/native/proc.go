@@ -317,8 +317,11 @@ func (dbp *nativeProcess) initialize(path string, debugInfoDirs []string) (*proc
 		//    look like the breakpoint was hit twice when it was "logically" only
 		//    executed once.
 		//    See: https://go-review.googlesource.com/c/go/+/208126
-		// TODO(alexsaezm) Verify if I need to disable it for ppc64le too
-		DisableAsyncPreempt: runtime.GOOS == "windows" || runtime.GOOS == "freebsd" || (runtime.GOOS == "linux" && runtime.GOARCH == "arm64"),
+		//	- on linux/ppc64le according to @laboger, they had issues in the past
+		//	  with gdb once AsyncPreempt was enabled. While implementing the port,
+		//	  few tests failed while it was enabled, but cannot be warrantied that
+		//	  disabling it fixed the issues.
+		DisableAsyncPreempt: runtime.GOOS == "windows" || runtime.GOOS == "freebsd" || (runtime.GOOS == "linux" && runtime.GOARCH == "arm64") || (runtime.GOOS == "linux" && runtime.GOARCH == "ppc64le"),
 
 		StopReason: stopReason,
 		CanDump:    runtime.GOOS == "linux" || runtime.GOOS == "freebsd" || (runtime.GOOS == "windows" && runtime.GOARCH == "amd64"),
