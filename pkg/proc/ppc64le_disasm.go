@@ -19,7 +19,8 @@ func init() {
 	var bigStacksplit = opcodeSeq{uint64(ppc64asm.CMPD), uint64(ppc64asm.B), uint64(ppc64asm.ADD), uint64(ppc64asm.SUBF), uint64(ppc64asm.LDX), uint64(ppc64asm.CMPD), uint64(ppc64asm.B)}
 
 	// Don't know what GetG is for. I don't see it in the split stack prologues.
-	var unixGetG = opcodeSeq{uint64(ppc64asm.LDX)}
+	//var unixGetG = opcodeSeq{uint64(ppc64asm.LDX)}
+	var unixGetG = opcodeSeq{30}
 
 	prologuesPPC64LE = make([]opcodeSeq, 0, 3)
 	for _, getG := range []opcodeSeq{unixGetG} {
