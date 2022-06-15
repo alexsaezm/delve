@@ -70,6 +70,8 @@ func (t *nativeThread) singleStep() (err error) {
 			}
 			return proc.ErrProcessExited{Pid: t.dbp.pid, Status: rs}
 		}
+		fmt.Println("Status: ", status.StopSignal())
+		fmt.Println("t.ID: ", t.ID)
 		if wpid == t.ID {
 			switch s := status.StopSignal(); s {
 			case sys.SIGTRAP:

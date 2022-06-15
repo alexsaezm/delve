@@ -1265,6 +1265,7 @@ func (tgt *Target) handleHardcodedBreakpoints(trapthread Thread, threads []Threa
 				pc2 -= uint64(len(bpinstr))
 			}
 			_, _ = mem.ReadMemory(buf, pc2)
+			fmt.Printf("buf: %#v\n bpinstr: %#v\n", buf, bpinstr)
 			if bytes.Equal(buf, bpinstr) {
 				return uint64(len(bpinstr))
 			}

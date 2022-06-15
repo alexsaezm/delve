@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	_PPC64LE_GPREGS_SIZE = 34 * 8   // TODO(alexsaezm) Review _PPC64LE_GPREGS_SIZE's value
+	//_PPC64LE_GPREGS_SIZE = 34 * 8   // TODO(alexsaezm) Review _PPC64LE_GPREGS_SIZE's value
+	_PPC64LE_GPREGS_SIZE = 44 * 8   // TODO(alexsaezm) Review _PPC64LE_GPREGS_SIZE's value
 	_PPC64LE_FPREGS_SIZE = 32*8 + 8 // TODO(alexsaezm) Review _PPC64LE_FPREGS_SIZE's value
 )
 
@@ -26,8 +27,7 @@ func ptraceGetGRegs(pid int, regs *linutil.PPC64LEPtraceRegs) (err error) {
 }
 
 func ptraceSetGRegs(pid int, regs *linutil.PPC64LEPtraceRegs) (err error) {
-	iov := sys.Iovec{Base: (*byte)(unsafe.Pointer(regs)), Len: _PPC64LE_GPREGS_SIZE}
-	_, _, err = syscall.Syscall6(syscall.SYS_PTRACE, sys.PTRACE_SETREGS, uintptr(pid), uintptr(elf.NT_PRSTATUS), uintptr(unsafe.Pointer(&iov)), 0, 0)
+	sys.PtraceSetRegs(pid, (*sys.PtraceRegs)(regs))
 	if err == syscall.Errno(0) {
 		err = nil
 	}
@@ -76,6 +76,7 @@ func (t *nativeThread) SetReg(regNum uint64, reg *op.DwarfRegister) error {
 		r.Regs.Nip = reg.Uint64Val
 	case regnum.PPC64LE_SP:
 		r.Regs.Gpr[1] = reg.Uint64Val
+		// TODO(alexsaezm) Check if I can uncomment this case
 	//case regnum.PPC64LE_LR:
 	//	r.Regs.Gpr[= reg.Uint64Val
 	default:

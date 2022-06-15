@@ -20,7 +20,7 @@ func init() {
 
 	// Don't know what GetG is for. I don't see it in the split stack prologues.
 	//var unixGetG = opcodeSeq{uint64(ppc64asm.LDX)}
-	var unixGetG = opcodeSeq{30}
+	var unixGetG = opcodeSeq{uint64(ppc64asm.MTTMR)}
 
 	prologuesPPC64LE = make([]opcodeSeq, 0, 3)
 	for _, getG := range []opcodeSeq{unixGetG} {
