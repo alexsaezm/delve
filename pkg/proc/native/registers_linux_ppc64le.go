@@ -14,12 +14,11 @@ import (
 const (
 	//_PPC64LE_GPREGS_SIZE = 34 * 8   // TODO(alexsaezm) Review _PPC64LE_GPREGS_SIZE's value
 	_PPC64LE_GPREGS_SIZE = 44 * 8   // TODO(alexsaezm) Review _PPC64LE_GPREGS_SIZE's value
-	_PPC64LE_FPREGS_SIZE = 32*8 + 8 // TODO(alexsaezm) Review _PPC64LE_FPREGS_SIZE's value
+	_PPC64LE_FPREGS_SIZE = 33*8 + 8 // TODO(alexsaezm) Review _PPC64LE_FPREGS_SIZE's value
 )
 
 func ptraceGetGRegs(pid int, regs *linutil.PPC64LEPtraceRegs) (err error) {
-	iov0 := sys.Iovec{Base: (*byte)(unsafe.Pointer(regs)), Len: _PPC64LE_GPREGS_SIZE}
-	_, _, err = syscall.Syscall6(syscall.SYS_PTRACE, sys.PTRACE_GETREGSET, uintptr(pid), uintptr(elf.NT_PRSTATUS), uintptr(unsafe.Pointer(&iov0)), 0, 0)
+	sys.PtraceGetRegs(pid, (*sys.PtraceRegs)(regs))
 	if err == syscall.Errno(0) {
 		err = nil
 	}
@@ -78,7 +77,7 @@ func (t *nativeThread) SetReg(regNum uint64, reg *op.DwarfRegister) error {
 		r.Regs.Gpr[1] = reg.Uint64Val
 		// TODO(alexsaezm) Check if I can uncomment this case
 	//case regnum.PPC64LE_LR:
-	//	r.Regs.Gpr[= reg.Uint64Val
+	//	r.Regs.Link = reg.Uint64Val
 	default:
 		panic("SetReg")
 	}

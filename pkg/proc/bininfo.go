@@ -365,9 +365,21 @@ func FindFunctionLocation(p Process, funcName string, lineOffset int) ([]uint64,
 // If sameline is set FirstPCAfterPrologue will always return an
 // address associated with the same line as fn.Entry.
 func FirstPCAfterPrologue(p Process, fn *Function, sameline bool) (uint64, error) {
+	// The DWARF prologue_end statement is incorrect in ppc64le and
+	// the prologue that is generated is not split between the beginning
+	// and end of the function instructions so we cannot pattern match
+	// the stack growth prologue due to the dynamic nature of the
+	// stack spilling code.
+	if p.BinInfo().Arch.Name == "ppc64le" {
+		f, l := fn.cu.lineInfo.PCToLine(fn.Entry, fn.Entry)
+		pcs := fn.cu.lineInfo.LineToPCs(f, l)
+		return pcs[len(pcs)-1].PC, nil
+	}
+
 	pc, _, line, ok := fn.cu.lineInfo.PrologueEndPC(fn.Entry, fn.End)
-	if ok {
+	if ok && false {
 		if !sameline {
+			panic(fmt.Sprintf("RETURN PC: %#v", pc))
 			return pc, nil
 		}
 		_, entryLine := fn.cu.lineInfo.PCToLine(fn.Entry, fn.Entry)

@@ -87,8 +87,8 @@ func ppc64leFixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Bina
 	return fctxt
 }
 
-const ppc64cgocallSPOffsetSaveSlot = 0x8
-const ppc64prevG0schedSPOffsetSaveSlot = 0x10
+const ppc64cgocallSPOffsetSaveSlot = 0x20
+const ppc64prevG0schedSPOffsetSaveSlot = 0x18
 
 // TODO(alexsaezm) Review this method
 func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) bool {
@@ -101,10 +101,10 @@ func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) boo
 			it.atend = true
 			return true
 		case "crosscall2":
-			//The offsets get from runtime/cgo/asm_ppc64.s:10
+			//The offsets get from runtime/cgo/asm_ppc64x.s:10
 			newsp, _ := readUintRaw(it.mem, it.regs.SP()+8*24, int64(it.bi.Arch.PtrSize()))
 			newbp, _ := readUintRaw(it.mem, it.regs.SP()+8*14, int64(it.bi.Arch.PtrSize()))
-			newlr, _ := readUintRaw(it.mem, it.regs.SP()+8*15, int64(it.bi.Arch.PtrSize()))
+			newlr, _ := readUintRaw(it.mem, it.regs.SP()+8*16, int64(it.bi.Arch.PtrSize()))
 			if it.regs.Reg(it.regs.BPRegNum) != nil {
 				it.regs.Reg(it.regs.BPRegNum).Uint64Val = newbp
 			} else {

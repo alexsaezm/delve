@@ -83,6 +83,7 @@ func (r *PPC64LERegisters) SP() uint64 {
 // which LK=1 and after System Call Vectored instructions.
 // Extracted from the 2.3.2 section of the PowerISA Book 3.1
 func (r *PPC64LERegisters) LR() uint64 {
+	//TODO(alexsaezm) Come back later here to implement this method
 	return 0
 	//return r.Regs.LR
 }
@@ -158,12 +159,12 @@ func (r *PPC64LERegisters) Slice(floatingPoint bool) ([]proc.Register, error) {
 
 // Copy returns a copy of these registers that is guaranteed not to change.
 func (r *PPC64LERegisters) Copy() (proc.Registers, error) {
-	//TODO implement me
+	//TODO(alexsaezm) implement me
 	panic("implement me: Copy")
 }
 
 type PPC64LEPtraceFpRegs struct {
-	// TODO(alexsaezm) Not quite sure about this, review in the future
+	//TODO(alexsaezm) Not quite sure about this, review in the future
 	Fp []byte
 }
 

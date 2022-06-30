@@ -2,7 +2,6 @@ package proc
 
 import (
 	"encoding/binary"
-
 	"github.com/go-delve/delve/pkg/dwarf/op"
 	"github.com/go-delve/delve/pkg/dwarf/regnum"
 	"golang.org/x/arch/ppc64/ppc64asm"
@@ -14,14 +13,11 @@ var prologuesPPC64LE []opcodeSeq
 
 func init() {
 	// Note: these will be the gnu opcodes and not the Go opcodes. Verify the sequences are as expected.
-	var tinyStacksplit = opcodeSeq{uint64(ppc64asm.LDX), uint64(ppc64asm.CMPD), uint64(ppc64asm.B)}
-	var smallStacksplit = opcodeSeq{uint64(ppc64asm.SUBF), uint64(ppc64asm.CMPD), uint64(ppc64asm.B)}
-	var bigStacksplit = opcodeSeq{uint64(ppc64asm.CMPD), uint64(ppc64asm.B), uint64(ppc64asm.ADD), uint64(ppc64asm.SUBF), uint64(ppc64asm.LDX), uint64(ppc64asm.CMPD), uint64(ppc64asm.B)}
+	var tinyStacksplit = opcodeSeq{uint64(ppc64asm.ADDI), uint64(ppc64asm.CMPLD), uint64(ppc64asm.BC)}
+	var smallStacksplit = opcodeSeq{uint64(ppc64asm.ADDI), uint64(ppc64asm.CMPLD), uint64(ppc64asm.BC)}
+	var bigStacksplit = opcodeSeq{uint64(ppc64asm.ADDI), uint64(ppc64asm.CMPLD), uint64(ppc64asm.BC), uint64(ppc64asm.STD), uint64(ppc64asm.STD), uint64(ppc64asm.MFSPR)}
 
-	// Don't know what GetG is for. I don't see it in the split stack prologues.
-	//var unixGetG = opcodeSeq{uint64(ppc64asm.LDX)}
-	var unixGetG = opcodeSeq{uint64(ppc64asm.MTTMR)}
-
+	var unixGetG = opcodeSeq{uint64(ppc64asm.LD)}
 	prologuesPPC64LE = make([]opcodeSeq, 0, 3)
 	for _, getG := range []opcodeSeq{unixGetG} {
 		for _, stacksplit := range []opcodeSeq{tinyStacksplit, smallStacksplit, bigStacksplit} {
