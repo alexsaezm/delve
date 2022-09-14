@@ -424,7 +424,7 @@ func (it *stackIterator) advanceRegs() (callFrameRegs op.DwarfRegisters, ret uin
 	// In the following line we copy GDB's behaviour by assuming this is
 	// implicit.
 	// See also the comment in dwarf2_frame_default_init in
-	// $GDB_SOURCE/dwarf2-frame.c
+	// $GDB_SOURCE/dwarf2/frame.c
 	callFrameRegs.AddReg(callFrameRegs.SPRegNum, cfareg)
 
 	for i, regRule := range framectx.Regs {
