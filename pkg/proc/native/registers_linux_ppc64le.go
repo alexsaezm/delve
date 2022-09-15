@@ -75,9 +75,8 @@ func (t *nativeThread) SetReg(regNum uint64, reg *op.DwarfRegister) error {
 		r.Regs.Nip = reg.Uint64Val
 	case regnum.PPC64LE_SP:
 		r.Regs.Gpr[1] = reg.Uint64Val
-		// TODO(alexsaezm) Check if I can uncomment this case
-	//case regnum.PPC64LE_LR:
-	//	r.Regs.Link = reg.Uint64Val
+	case regnum.PPC64LE_LR:
+		r.Regs.Link = reg.Uint64Val
 	default:
 		panic("SetReg")
 	}

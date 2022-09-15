@@ -83,9 +83,7 @@ func (r *PPC64LERegisters) SP() uint64 {
 // which LK=1 and after System Call Vectored instructions.
 // Extracted from the 2.3.2 section of the PowerISA Book 3.1
 func (r *PPC64LERegisters) LR() uint64 {
-	//TODO(alexsaezm) Come back later here to implement this method
-	return 0
-	//return r.Regs.LR
+	return r.Regs.Link
 }
 
 func (r *PPC64LERegisters) BP() uint64 {

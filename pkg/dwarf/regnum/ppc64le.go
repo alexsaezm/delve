@@ -24,6 +24,8 @@ func PPC64LEToName(num uint64) string {
 		return "SP"
 	case num == PPC64LE_PC:
 		return "PC"
+	case num == PPC64LE_LR:
+		return "LR"
 	case num >= PPC64LE_V0 && num <= 108:
 		return fmt.Sprintf("V%d", num-64)
 	default:

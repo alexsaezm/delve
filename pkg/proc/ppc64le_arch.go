@@ -34,6 +34,7 @@ func PPC64LEArch(goos string) *Arch {
 		usesLR:                           true,
 		PCRegNum:                         regnum.PPC64LE_PC,
 		SPRegNum:                         regnum.PPC64LE_SP,
+		LRRegNum:                         regnum.PPC64LE_LR,
 		asmRegisters:                     ppc64leAsmRegisters,
 		RegisterNameToDwarf:              nameToDwarfFunc(regnum.PPC64LENameToDwarf),
 	}
