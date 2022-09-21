@@ -211,6 +211,9 @@ func (it *stackIterator) Next() bool {
 	}
 
 	callFrameRegs, ret, retaddr := it.advanceRegs()
+	fmt.Println("callFrameRegs: ", callFrameRegs)
+	fmt.Println("ret: ", ret)
+	fmt.Println("retaddr: ", retaddr)
 	it.frame = it.newStackframe(ret, retaddr)
 
 	if it.opts&StacktraceSimple == 0 {
@@ -309,7 +312,9 @@ func (it *stackIterator) stacktrace(depth int) ([]Stackframe, error) {
 	}
 	frames := make([]Stackframe, 0, depth+1)
 	for it.Next() {
+		fmt.Println("Before it.appendInlineCalls")
 		frames = it.appendInlineCalls(frames, it.Frame())
+		fmt.Println("After it.appendInlineCalls")
 		if len(frames) >= depth+1 {
 			break
 		}
@@ -445,6 +450,10 @@ func (it *stackIterator) advanceRegs() (callFrameRegs op.DwarfRegisters, ret uin
 	}
 
 	if it.bi.Arch.Name == "arm64" || it.bi.Arch.Name == "ppc64le" {
+		fmt.Println("-> ret: ", ret)
+		fmt.Println("-> it.regs.Reg(it.regs.LRRegNum): ", it.regs.Reg(it.regs.LRRegNum))
+		fmt.Println("-> it.regs.LRRegNum): ", it.regs.LRRegNum)
+
 		if ret == 0 && it.regs.Reg(it.regs.LRRegNum) != nil {
 			ret = it.regs.Reg(it.regs.LRRegNum).Uint64Val
 		}

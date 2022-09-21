@@ -35,7 +35,7 @@ func PPC64LEToName(num uint64) string {
 
 func PPC64LEMaxRegNum() uint64 {
 	// TODO(alexsaezm) What is this thing?
-	return 65
+	return 100
 }
 
 var PPC64LENameToDwarf = func() map[string]int {

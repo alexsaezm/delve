@@ -28,8 +28,8 @@ type PPC64LEPtraceRegs struct {
 	Msr       uint64
 	Orig_gpr3 uint64
 	Ctr       uint64
-	Link      uint64
-	Xer       uint64
+	Link      uint64 // Link register -- LLDB dwarf_lr_ppc64le = 65
+	Xer       uint64 // Fixed point exception register -- LLDB dwarf_xer_ppc64le = 76
 	Ccr       uint64
 	Softe     uint64
 	Trap      uint64
@@ -39,9 +39,7 @@ type PPC64LEPtraceRegs struct {
 	//SP  uint64 // SP pointer r[1]
 	//TOC uint64 // TOC pointer -- r[2]
 	//TLS uint64 // Thread pointer -- r[13]
-	//	LR  uint64 // Link register -- LLDB dwarf_lr_ppc64le = 65
 	//	CTR uint64 // Loop count register -- LLDB dwarf_ctr_ppc64le = 66
-	//XER uint64 // Fixed point exception register // TODO(alexsaezm) LLDB dwarf_xer_ppc64le = 76
 }
 
 func (regs *PPC64LEPtraceRegs) String() string {

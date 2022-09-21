@@ -2,6 +2,7 @@ package proc
 
 import (
 	"encoding/binary"
+	"fmt"
 	"strings"
 
 	"github.com/go-delve/delve/pkg/dwarf/frame"
@@ -191,6 +192,7 @@ func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) boo
 // ppc64leRegSize returns the size (in bytes) of register regnum.
 func ppc64leRegSize(rn uint64) int {
 	// FIXME(alexsaezm) Fix this, this is clearly not correct
+	fmt.Println("Here")
 	if rn == regnum.PPC64LE_PC {
 		return 8
 	}
