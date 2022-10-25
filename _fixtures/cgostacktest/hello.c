@@ -11,6 +11,8 @@
 #define BREAKPOINT asm("brk 0xF000;")
 #else
 #define BREAKPOINT asm("brk 0;")
+#elif __PPC64__
+#define BREAKPOINT asm("tw 31,0,0;")
 #endif
 #endif
 

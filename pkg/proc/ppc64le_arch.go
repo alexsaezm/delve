@@ -63,6 +63,11 @@ func ppc64leFixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Bina
 					Offset: 0,
 				},
 			},
+			CFA: frame.DWRule{
+				Rule:   frame.RuleCFA,
+				Reg:    regnum.PPC64LE_SP,
+				Offset: int64(2 * a.PtrSize()),
+			},
 		}
 	}
 	if a.crosscall2fn == nil {
@@ -72,10 +77,11 @@ func ppc64leFixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Bina
 
 	// Checks if we marked the function as a crosscall and if we are currently in it
 	if a.crosscall2fn != nil && pc >= a.crosscall2fn.Entry && pc < a.crosscall2fn.End {
+		fmt.Println("------------ Crosscall2")
 		rule := fctxt.CFA
 		if rule.Offset == crosscall2SPOffsetBad {
 			// Linux support only
-			rule.Offset += crosscall2SPOffset
+			rule.Offset += crosscall2SPOffsetLinuxPPC64LE
 		}
 		fctxt.CFA = rule
 	}
@@ -94,6 +100,13 @@ const ppc64prevG0schedSPOffsetSaveSlot = 0x18
 
 // TODO(alexsaezm) Review this method
 func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) bool {
+	if it.frame.Current.Fn == nil {
+		if it.systemstack && it.g != nil && it.top {
+			it.switchToGoroutineStack()
+			return true
+		}
+		return false
+	}
 	if it.frame.Current.Fn != nil {
 		switch it.frame.Current.Fn.Name {
 		case "runtime.asmcgocall", "runtime.cgocallback_gofunc", "runtime.sigpanic", "runtime.cgocallback":
@@ -149,6 +162,7 @@ func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) boo
 		oldsp := callFrameRegs.SP()
 		newsp := uint64(int64(it.stackhi) - off)
 
+		fmt.Printf("asmcgocall %x %x\n", oldsp, newsp)
 		// runtime.asmcgocall can also be called from inside the system stack,
 		// in that case no stack switch actually happens
 		if newsp == oldsp {
@@ -192,7 +206,6 @@ func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) boo
 // ppc64leRegSize returns the size (in bytes) of register regnum.
 func ppc64leRegSize(rn uint64) int {
 	// FIXME(alexsaezm) Fix this, this is clearly not correct
-	fmt.Println("Here")
 	if rn == regnum.PPC64LE_PC {
 		return 8
 	}

@@ -226,10 +226,19 @@ func (it *stackIterator) Next() bool {
 	}
 
 	callFrameRegs, ret, retaddr := it.advanceRegs()
+	if it.err != nil {
+		return false
+	}
 	it.frame = it.newStackframe(ret, retaddr)
+	fn := ""
+	if it.frame.Current.Fn != nil {
+		fn = it.frame.Current.Fn.Name
+	}
+	fmt.Printf("frame: %q %#v\n", fn, it.frame.Current)
 
 	if it.opts&StacktraceSimple == 0 {
 		if it.bi.Arch.switchStack(it, &callFrameRegs) {
+			fmt.Println("SWITCHED LE STACK")
 			return true
 		}
 	}
