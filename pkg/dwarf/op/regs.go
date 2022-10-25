@@ -3,7 +3,6 @@ package op
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 )
 
 // DwarfRegisters holds the value of stack program registers.
@@ -98,7 +97,6 @@ func (regs *DwarfRegisters) Reg(idx uint64) *DwarfRegister {
 			return nil
 		}
 	}
-	fmt.Println("regs.regs", regs.regs)
 	if regs.regs[idx] == nil {
 		regs.loadMore()
 	}

@@ -158,6 +158,9 @@ func (g *G) Stacktrace(depth int, opts StacktraceOptions) ([]Stackframe, error) 
 	if err != nil {
 		return nil, err
 	}
+	if it.err != nil {
+		return nil, it.err
+	}
 	if opts&StacktraceReadDefers != 0 {
 		g.readDefers(frames)
 	}
@@ -201,7 +204,19 @@ func newStackIterator(bi *BinaryInfo, mem MemoryReadWriter, regs op.DwarfRegiste
 	if g != nil {
 		systemstack = g.SystemStack
 	}
-	return &stackIterator{pc: regs.PC(), regs: regs, top: true, bi: bi, mem: mem, err: nil, atend: false, stackhi: stackhi, systemstack: systemstack, g: g, opts: opts}
+	return &stackIterator{
+		pc:          regs.PC(),
+		regs:        regs,
+		top:         true,
+		bi:          bi,
+		mem:         mem,
+		err:         nil,
+		atend:       false,
+		stackhi:     stackhi,
+		systemstack: systemstack,
+		g:           g,
+		opts:        opts,
+	}
 }
 
 // Next points the iterator to the next stack frame.
@@ -211,9 +226,6 @@ func (it *stackIterator) Next() bool {
 	}
 
 	callFrameRegs, ret, retaddr := it.advanceRegs()
-	fmt.Println("callFrameRegs: ", callFrameRegs)
-	fmt.Println("ret: ", ret)
-	fmt.Println("retaddr: ", retaddr)
 	it.frame = it.newStackframe(ret, retaddr)
 
 	if it.opts&StacktraceSimple == 0 {
@@ -279,7 +291,20 @@ func (it *stackIterator) newStackframe(ret, retaddr uint64) Stackframe {
 	} else {
 		it.regs.FrameBase = it.frameBase(fn)
 	}
-	r := Stackframe{Current: Location{PC: it.pc, File: f, Line: l, Fn: fn}, Regs: it.regs, Ret: ret, addrret: retaddr, stackHi: it.stackhi, SystemStack: it.systemstack, lastpc: it.pc}
+	r := Stackframe{
+		Current: Location{
+			PC:   it.pc,
+			File: f,
+			Line: l,
+			Fn:   fn,
+		},
+		Regs:        it.regs,
+		Ret:         ret,
+		addrret:     retaddr,
+		stackHi:     it.stackhi,
+		SystemStack: it.systemstack,
+		lastpc:      it.pc,
+	}
 	if r.Regs.Reg(it.regs.PCRegNum) == nil {
 		r.Regs.AddReg(it.regs.PCRegNum, op.DwarfRegisterFromUint64(it.pc))
 	}
@@ -312,9 +337,7 @@ func (it *stackIterator) stacktrace(depth int) ([]Stackframe, error) {
 	}
 	frames := make([]Stackframe, 0, depth+1)
 	for it.Next() {
-		fmt.Println("Before it.appendInlineCalls")
 		frames = it.appendInlineCalls(frames, it.Frame())
-		fmt.Println("After it.appendInlineCalls")
 		if len(frames) >= depth+1 {
 			break
 		}
@@ -450,10 +473,6 @@ func (it *stackIterator) advanceRegs() (callFrameRegs op.DwarfRegisters, ret uin
 	}
 
 	if it.bi.Arch.Name == "arm64" || it.bi.Arch.Name == "ppc64le" {
-		fmt.Println("-> ret: ", ret)
-		fmt.Println("-> it.regs.Reg(it.regs.LRRegNum): ", it.regs.Reg(it.regs.LRRegNum))
-		fmt.Println("-> it.regs.LRRegNum): ", it.regs.LRRegNum)
-
 		if ret == 0 && it.regs.Reg(it.regs.LRRegNum) != nil {
 			ret = it.regs.Reg(it.regs.LRRegNum).Uint64Val
 		}
@@ -470,7 +489,7 @@ func (it *stackIterator) executeFrameRegRule(regnum uint64, rule frame.DWRule, c
 		return nil, nil
 	case frame.RuleSameVal:
 		if it.regs.Reg(regnum) == nil {
-			return nil, nil
+			return nil, fmt.Errorf("register %d undefined", regnum)
 		}
 		reg := *it.regs.Reg(regnum)
 		return &reg, nil

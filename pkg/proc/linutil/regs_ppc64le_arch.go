@@ -137,6 +137,17 @@ func (r *PPC64LERegisters) Slice(floatingPoint bool) ([]proc.Register, error) {
 		{"R30", r.Regs.Gpr[30]},
 		{"R31", r.Regs.Gpr[31]},
 		{"NIP", r.Regs.Nip},
+		{"MSr", r.Regs.Msr},
+		{"Orig_gpr3", r.Regs.Orig_gpr3},
+		{"Ctr", r.Regs.Ctr},
+		{"Link", r.Regs.Link},
+		{"Xer", r.Regs.Xer},
+		{"Ccr", r.Regs.Ccr},
+		{"Softe", r.Regs.Softe},
+		{"Trap", r.Regs.Trap},
+		{"Dar", r.Regs.Dar},
+		{"Dsisr", r.Regs.Dsisr},
+		{"Result", r.Regs.Result},
 	}
 	out := make([]proc.Register, 0, len(regs)+len(r.Fpregs))
 	for _, reg := range regs {

@@ -216,5 +216,5 @@ func ppc64leAddrAndStackRegsToDwarfRegisters(staticBase, pc, sp, bp, lr uint64) 
 }
 
 func ppc64leDwarfRegisterToString(i int, reg *op.DwarfRegister) (name string, floatingPoint bool, repr string) {
-	panic("ppc64leDwarfRegisterToString")
+	return name, false, fmt.Sprintf("%#x", reg.Bytes)
 }

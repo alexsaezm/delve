@@ -25,7 +25,7 @@ func PPC64LEToName(num uint64) string {
 	case num == PPC64LE_PC:
 		return "PC"
 	case num == PPC64LE_LR:
-		return "LR"
+		return "Link"
 	case num >= PPC64LE_V0 && num <= 108:
 		return fmt.Sprintf("V%d", num-64)
 	default:
@@ -43,7 +43,7 @@ var PPC64LENameToDwarf = func() map[string]int {
 
 	r["nip"] = PPC64LE_PC
 	r["sp"] = PPC64LE_SP
-	r["lr"] = PPC64LE_LR
+	r["link"] = PPC64LE_LR
 
 	// General Purpose Registers: from R0 to R31
 	for i := 0; i <= 31; i++ {
