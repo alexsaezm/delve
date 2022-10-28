@@ -47,8 +47,9 @@ func ppc64leFixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Bina
 		a.sigreturnfn = bi.LookupFunc["runtime.sigreturn"]
 	}
 	if fctxt == nil || (a.sigreturnfn != nil && pc >= a.sigreturnfn.Entry && pc < a.sigreturnfn.End) {
+		fmt.Println("nil frame context")
 		return &frame.FrameContext{
-			RetAddrReg: regnum.PPC64LE_PC,
+			RetAddrReg: regnum.PPC64LE_LR,
 			Regs: map[uint64]frame.DWRule{
 				regnum.PPC64LE_PC: {
 					Rule:   frame.RuleOffset,
@@ -77,7 +78,7 @@ func ppc64leFixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Bina
 
 	// Checks if we marked the function as a crosscall and if we are currently in it
 	if a.crosscall2fn != nil && pc >= a.crosscall2fn.Entry && pc < a.crosscall2fn.End {
-		fmt.Println("------------ Crosscall2")
+		fmt.Println("------------- crosscall2")
 		rule := fctxt.CFA
 		if rule.Offset == crosscall2SPOffsetBad {
 			// Linux support only
@@ -95,17 +96,14 @@ func ppc64leFixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Bina
 	return fctxt
 }
 
-const ppc64cgocallSPOffsetSaveSlot = 0x20
-const ppc64prevG0schedSPOffsetSaveSlot = 0x18
+const ppc64cgocallSPOffsetSaveSlot = 32
+const ppc64prevG0schedSPOffsetSaveSlot = 40
 
 // TODO(alexsaezm) Review this method
 func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) bool {
-	if it.frame.Current.Fn == nil {
-		if it.systemstack && it.g != nil && it.top {
-			it.switchToGoroutineStack()
-			return true
-		}
-		return false
+	if it.frame.Current.Fn == nil && it.systemstack && it.g != nil && it.top {
+		it.switchToGoroutineStack()
+		return true
 	}
 	if it.frame.Current.Fn != nil {
 		switch it.frame.Current.Fn.Name {
@@ -119,7 +117,9 @@ func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) boo
 			//The offsets get from runtime/cgo/asm_ppc64x.s:10
 			newsp, _ := readUintRaw(it.mem, it.regs.SP()+8*24, int64(it.bi.Arch.PtrSize()))
 			newbp, _ := readUintRaw(it.mem, it.regs.SP()+8*14, int64(it.bi.Arch.PtrSize()))
-			newlr, _ := readUintRaw(it.mem, it.regs.SP()+8*16, int64(it.bi.Arch.PtrSize()))
+			newlr, _ := readUintRaw(it.mem, it.regs.SP()+16, int64(it.bi.Arch.PtrSize()))
+			panic("crosscall2")
+			fmt.Println("crosscall2", it.regs.SP(), newsp, newbp, newlr)
 			if it.regs.Reg(it.regs.BPRegNum) != nil {
 				it.regs.Reg(it.regs.BPRegNum).Uint64Val = newbp
 			} else {
@@ -150,6 +150,7 @@ func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) boo
 	}
 	switch fn.Name {
 	case "runtime.asmcgocall":
+		fmt.Println("entering runtime.asmcgocall branch")
 		if !it.systemstack {
 			return false
 		}
@@ -158,11 +159,14 @@ func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) boo
 		// switches from the goroutine stack to the system stack.
 		// Since we are unwinding the stack from callee to caller we have to switch
 		// from the system stack to the goroutine stack.
-		off, _ := readIntRaw(it.mem, callFrameRegs.SP()+ppc64cgocallSPOffsetSaveSlot, int64(it.bi.Arch.PtrSize()))
+		off, _ := readIntRaw(it.mem,
+			callFrameRegs.SP()+ppc64cgocallSPOffsetSaveSlot,
+			int64(it.bi.Arch.PtrSize()))
+		fmt.Printf("OFFSET: %x\n", off)
 		oldsp := callFrameRegs.SP()
 		newsp := uint64(int64(it.stackhi) - off)
+		fmt.Printf("oldsp %x newsp %x\n", oldsp, newsp)
 
-		fmt.Printf("asmcgocall %x %x\n", oldsp, newsp)
 		// runtime.asmcgocall can also be called from inside the system stack,
 		// in that case no stack switch actually happens
 		if newsp == oldsp {
@@ -214,7 +218,7 @@ func ppc64leRegSize(rn uint64) int {
 
 func ppc64leRegistersToDwarfRegisters(staticBase uint64, regs Registers) *op.DwarfRegisters {
 	dregs := initDwarfRegistersFromSlice(int(regnum.PPC64LEMaxRegNum()), regs, regnum.PPC64LENameToDwarf)
-	dr := op.NewDwarfRegisters(staticBase, dregs, binary.LittleEndian, regnum.PPC64LE_PC, regnum.PPC64LE_SP, 0, regnum.PPC64LE_LR)
+	dr := op.NewDwarfRegisters(staticBase, dregs, binary.LittleEndian, regnum.PPC64LE_PC, regnum.PPC64LE_SP, regnum.PPC64LE_SP, regnum.PPC64LE_LR)
 	dr.SetLoadMoreCallback(loadMoreDwarfRegistersFromSliceFunc(dr, regs, regnum.PPC64LENameToDwarf))
 	return dr
 }

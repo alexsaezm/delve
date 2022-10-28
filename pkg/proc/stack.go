@@ -230,15 +230,9 @@ func (it *stackIterator) Next() bool {
 		return false
 	}
 	it.frame = it.newStackframe(ret, retaddr)
-	fn := ""
-	if it.frame.Current.Fn != nil {
-		fn = it.frame.Current.Fn.Name
-	}
-	fmt.Printf("frame: %q %#v\n", fn, it.frame.Current)
 
 	if it.opts&StacktraceSimple == 0 {
 		if it.bi.Arch.switchStack(it, &callFrameRegs) {
-			fmt.Println("SWITCHED LE STACK")
 			return true
 		}
 	}
@@ -429,6 +423,9 @@ func (it *stackIterator) appendInlineCalls(frames []Stackframe, frame Stackframe
 // it.regs.CFA; the caller has to eventually switch it.regs when the iterator
 // advances to the next frame.
 func (it *stackIterator) advanceRegs() (callFrameRegs op.DwarfRegisters, ret uint64, retaddr uint64) {
+	if it.frame.Current.Fn != nil {
+		fmt.Println("fname", it.frame.Current.Fn.Name)
+	}
 	fde, err := it.bi.frameEntries.FDEForPC(it.pc)
 	var framectx *frame.FrameContext
 	if _, nofde := err.(*frame.ErrNoFDEForPC); nofde {
@@ -491,6 +488,7 @@ func (it *stackIterator) advanceRegs() (callFrameRegs op.DwarfRegisters, ret uin
 }
 
 func (it *stackIterator) executeFrameRegRule(regnum uint64, rule frame.DWRule, cfa int64) (*op.DwarfRegister, error) {
+	// fmt.Printf("executeFrameRegRule: regnum=%d, rule=%v, cfa=%d\n", regnum, rule, cfa)
 	switch rule.Rule {
 	default:
 		fallthrough

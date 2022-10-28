@@ -43,6 +43,7 @@ var PPC64LENameToDwarf = func() map[string]int {
 
 	r["nip"] = PPC64LE_PC
 	r["sp"] = PPC64LE_SP
+	r["bp"] = PPC64LE_SP
 	r["link"] = PPC64LE_LR
 
 	// General Purpose Registers: from R0 to R31

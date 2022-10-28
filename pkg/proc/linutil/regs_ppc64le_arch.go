@@ -2,6 +2,7 @@ package linutil
 
 import (
 	"fmt"
+
 	"github.com/go-delve/delve/pkg/proc"
 )
 
@@ -85,7 +86,7 @@ func (r *PPC64LERegisters) LR() uint64 {
 }
 
 func (r *PPC64LERegisters) BP() uint64 {
-	return r.Regs.Gpr[30]
+	return r.Regs.Gpr[1]
 }
 
 // TLS returns the value of the thread pointer stored in Gpr[13]
