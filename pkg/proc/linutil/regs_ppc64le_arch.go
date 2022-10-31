@@ -21,7 +21,6 @@ func NewPPC64LERegisters(regs *PPC64LEPtraceRegs, loadFpRegs func(*PPC64LERegist
 
 // PPC64LEPtraceRegs is the struct used by the linux kernel to return the
 // general purpose registers for PPC64LE CPUs.
-// TODO(alexsaezm) Remove the next line:
 // Copied from src/syscall/ztypes_linux_ppc64le.go#L518-L532
 type PPC64LEPtraceRegs struct {
 	Gpr       [32]uint64 // 32 general-purpose registers, each 64 bits wide
@@ -37,12 +36,9 @@ type PPC64LEPtraceRegs struct {
 	Dar       uint64
 	Dsisr     uint64
 	Result    uint64
-	//SP  uint64 // SP pointer r[1]
-	//TOC uint64 // TOC pointer -- r[2]
-	//TLS uint64 // Thread pointer -- r[13]
-	//	CTR uint64 // Loop count register -- LLDB dwarf_ctr_ppc64le = 66
 }
 
+// String TODO(alexsaezm) Remove this method, I'm only using it for debugging
 func (regs *PPC64LEPtraceRegs) String() string {
 	gprs := "\n"
 	for i, r := range regs.Gpr {
@@ -50,7 +46,7 @@ func (regs *PPC64LEPtraceRegs) String() string {
 	}
 	return fmt.Sprintf("Registers:\n"+
 		"\t - Gpr: %s"+
-		"\t - Nip: %d\n"+
+		"\t - Nip: %#x\n"+
 		"\t - Msr: %d\n"+
 		"\t - Orig_gpr3: %d\n"+
 		"\t - Ctr: %d\n"+
@@ -137,7 +133,7 @@ func (r *PPC64LERegisters) Slice(floatingPoint bool) ([]proc.Register, error) {
 		{"R29", r.Regs.Gpr[29]},
 		{"R30", r.Regs.Gpr[30]},
 		{"R31", r.Regs.Gpr[31]},
-		{"NIP", r.Regs.Nip},
+		{"Nip", r.Regs.Nip},
 		{"MSr", r.Regs.Msr},
 		{"Orig_gpr3", r.Regs.Orig_gpr3},
 		{"Ctr", r.Regs.Ctr},
@@ -167,12 +163,12 @@ func (r *PPC64LERegisters) Slice(floatingPoint bool) ([]proc.Register, error) {
 
 // Copy returns a copy of these registers that is guaranteed not to change.
 func (r *PPC64LERegisters) Copy() (proc.Registers, error) {
-	//TODO(alexsaezm) implement me
+	//TODO(alexsaezm) implement me, not in use yet.
 	panic("implement me: Copy")
 }
 
 type PPC64LEPtraceFpRegs struct {
-	//TODO(alexsaezm) Not quite sure about this, review in the future
+	//TODO(alexsaezm) Figure out why I need this struct
 	Fp []byte
 }
 

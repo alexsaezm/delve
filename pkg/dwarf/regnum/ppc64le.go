@@ -10,10 +10,10 @@ const (
 	PPC64LE_CR0 = 0  // Condition Registers: from CR0 to CR7
 	PPC64LE_SP  = 1  // Stack frame pointer: Gpr[1]
 	PPC64LE_PC  = 12 // The documentation refers to this as the CIA (Current Instruction Address)
-	PPC64LE_LR  = 65 // TODO(alexsaezm) What is this?
+	PPC64LE_LR  = 65 // Link register
 )
 
-// PPC64LEToName TODO(alexsaezm) Verify why I have this method, do I need it?
+// PPC64LEToName TODO(alexsaezm) Verify why this method is never called.
 func PPC64LEToName(num uint64) string {
 	switch {
 	case num <= 31:
@@ -34,7 +34,7 @@ func PPC64LEToName(num uint64) string {
 }
 
 func PPC64LEMaxRegNum() uint64 {
-	// TODO(alexsaezm) What is this thing?
+	// TODO(alexsaezm) Find the exact number
 	return 100
 }
 

@@ -43,10 +43,10 @@ func ppc64leAsmDecode(asmInst *AsmInstruction, mem []byte, regs *op.DwarfRegiste
 
 	// TODO(alexsaezm) Review the opcodes, there's a lot more
 	switch inst.Op {
-	case ppc64asm.BL, ppc64asm.BLA, ppc64asm.BCL, ppc64asm.BCLA, ppc64asm.BCLRL, ppc64asm.BCCTRL, ppc64asm.BCTARL:
+	case ppc64asm.BL, ppc64asm.BLA, ppc64asm.BCL, ppc64asm.BCLA, ppc64asm.BCLR, ppc64asm.BCLRL, ppc64asm.BCCTRL, ppc64asm.BCTARL:
 		// Pages 38-40 Book I v3.0
 		asmInst.Kind = CallInstruction
-	case ppc64asm.BCLR, ppc64asm.RFEBB, ppc64asm.RFID, ppc64asm.HRFID, ppc64asm.RFI, ppc64asm.RFCI, ppc64asm.RFDI, ppc64asm.RFMCI, ppc64asm.RFGI:
+	case ppc64asm.RFEBB, ppc64asm.RFID, ppc64asm.HRFID, ppc64asm.RFI, ppc64asm.RFCI, ppc64asm.RFDI, ppc64asm.RFMCI, ppc64asm.RFGI:
 		asmInst.Kind = RetInstruction
 	case ppc64asm.B, ppc64asm.BA, ppc64asm.BC, ppc64asm.BCA, ppc64asm.BCCTR, ppc64asm.BCTAR:
 		// Pages 38-40 Book I v3.0
@@ -61,7 +61,7 @@ func ppc64leAsmDecode(asmInst *AsmInstruction, mem []byte, regs *op.DwarfRegiste
 
 func resolveCallArgPPC64LE(inst *ppc64asm.Inst, instAddr uint64, currentGoroutine bool, regs *op.DwarfRegisters, mem MemoryReadWriter, bininfo *BinaryInfo) *Location {
 	switch inst.Op {
-	case ppc64asm.B, ppc64asm.BL, ppc64asm.BLA, ppc64asm.BCL, ppc64asm.BCLA, ppc64asm.BCLRL, ppc64asm.BCCTRL, ppc64asm.BCTARL:
+	case ppc64asm.B, ppc64asm.BL, ppc64asm.BLA, ppc64asm.BCL, ppc64asm.BCLA, ppc64asm.BCLR, ppc64asm.BCLRL, ppc64asm.BCCTRL, ppc64asm.BCTARL:
 		// ok
 	default:
 		return nil

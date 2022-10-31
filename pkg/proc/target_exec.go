@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"golang.org/x/arch/ppc64/ppc64asm"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/go-delve/delve/pkg/astutil"
@@ -908,7 +910,22 @@ func setStepIntoBreakpoint(dbp *Target, curfn *Function, text []AsmInstruction, 
 		return nil
 	}
 
+	pc := instr.DestLoc.PC
 	fn := instr.DestLoc.Fn
+
+	if runtime.GOARCH == "ppc64le" && (instr.Inst.OpcodeEquals(uint64(ppc64asm.BCLRL))) {
+		fmt.Println("----- found bclrl instruction")
+		regs, err := dbp.CurrentThread().Registers()
+		if err != nil {
+			return err
+		}
+		fmt.Println("LR after: ", pc)
+		pc = regs.LR()
+		fn = dbp.BinInfo().PCToFunc(pc)
+		fmt.Println("LR before: ", pc)
+		fmt.Println("FN: ", fn)
+		fmt.Printf("lr: %#x fn: %s\n", regs.LR(), fn.Name)
+	}
 
 	// Skip unexported runtime functions
 	if !stepIntoUnexportedRuntime && fn != nil && fn.privateRuntime() {
@@ -918,8 +935,6 @@ func setStepIntoBreakpoint(dbp *Target, curfn *Function, text []AsmInstruction, 
 	//TODO(aarzilli): if we want to let users hide functions
 	// or entire packages from being stepped into with 'step'
 	// those extra checks should be done here.
-
-	pc := instr.DestLoc.PC
 
 	// Skip InhibitStepInto functions for different arch.
 	if dbp.BinInfo().Arch.inhibitStepInto(dbp.BinInfo(), pc) {
@@ -940,6 +955,7 @@ func setStepIntoBreakpoint(dbp *Target, curfn *Function, text []AsmInstruction, 
 
 	// Set a breakpoint after the function's prologue
 	if _, err := allowDuplicateBreakpoint(dbp.SetBreakpoint(0, pc, NextBreakpoint, cond)); err != nil {
+		fmt.Println("HERE")
 		return err
 	}
 
