@@ -2,6 +2,7 @@ package proc
 
 import (
 	"encoding/binary"
+
 	"github.com/go-delve/delve/pkg/dwarf/op"
 	"github.com/go-delve/delve/pkg/dwarf/regnum"
 	"golang.org/x/arch/ppc64/ppc64asm"
@@ -61,7 +62,17 @@ func ppc64leAsmDecode(asmInst *AsmInstruction, mem []byte, regs *op.DwarfRegiste
 
 func resolveCallArgPPC64LE(inst *ppc64asm.Inst, instAddr uint64, currentGoroutine bool, regs *op.DwarfRegisters, mem MemoryReadWriter, bininfo *BinaryInfo) *Location {
 	switch inst.Op {
-	case ppc64asm.B, ppc64asm.BL, ppc64asm.BLA, ppc64asm.BCL, ppc64asm.BCLA, ppc64asm.BCLR, ppc64asm.BCLRL, ppc64asm.BCCTRL, ppc64asm.BCTARL:
+	case ppc64asm.BCLRL, ppc64asm.BCLR:
+		if regs != nil && regs.PC() == instAddr {
+			pc := regs.Reg(bininfo.Arch.LRRegNum).Uint64Val
+			file, line, fn := bininfo.PCToLine(pc)
+			if fn == nil {
+				return &Location{PC: pc}
+			}
+			return &Location{PC: pc, File: file, Line: line, Fn: fn}
+		}
+		return nil
+	case ppc64asm.B, ppc64asm.BL, ppc64asm.BLA, ppc64asm.BCL, ppc64asm.BCLA, ppc64asm.BCCTRL, ppc64asm.BCTARL:
 		// ok
 	default:
 		return nil

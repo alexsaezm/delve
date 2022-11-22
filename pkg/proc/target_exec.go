@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-	"golang.org/x/arch/ppc64/ppc64asm"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"golang.org/x/arch/ppc64/ppc64asm"
 
 	"github.com/go-delve/delve/pkg/astutil"
 	"github.com/go-delve/delve/pkg/dwarf/reader"
@@ -773,7 +774,9 @@ func next(dbp *Target, stepInto, inlinedStepOut bool) error {
 }
 
 func setStepIntoBreakpoints(dbp *Target, curfn *Function, text []AsmInstruction, topframe Stackframe, sameGCond ast.Expr) error {
+	fmt.Println("set step into breakpoints")
 	for _, instr := range text {
+		fmt.Printf("instr: %v\n", instr.Text(IntelFlavour, dbp.BinInfo()))
 		if instr.Loc.File != topframe.Current.File || instr.Loc.Line != topframe.Current.Line || !instr.IsCall() {
 			continue
 		}
@@ -783,6 +786,7 @@ func setStepIntoBreakpoints(dbp *Target, curfn *Function, text []AsmInstruction,
 				return err
 			}
 		} else {
+			fmt.Println("non absolute")
 			// Non-absolute call instruction, set a StepBreakpoint here
 			bp, err := allowDuplicateBreakpoint(dbp.SetBreakpoint(0, instr.Loc.PC, StepBreakpoint, sameGCond))
 			if err != nil {
@@ -792,6 +796,7 @@ func setStepIntoBreakpoints(dbp *Target, curfn *Function, text []AsmInstruction,
 			breaklet.callback = stepIntoCallback
 		}
 	}
+	fmt.Println("fin set step into breakpoints")
 	return nil
 }
 
@@ -912,19 +917,21 @@ func setStepIntoBreakpoint(dbp *Target, curfn *Function, text []AsmInstruction, 
 
 	pc := instr.DestLoc.PC
 	fn := instr.DestLoc.Fn
+	fmt.Println("PC before: ", pc)
+	fmt.Printf("instr: %v\n", instr.Text(IntelFlavour, dbp.BinInfo()))
+	if fn != nil {
+		fmt.Println("fn before: ", fn.Name)
+	}
 
-	if runtime.GOARCH == "ppc64le" && (instr.Inst.OpcodeEquals(uint64(ppc64asm.BCLRL))) {
+	if runtime.GOARCH == "ppc64le" && instr.Inst.OpcodeEquals(uint64(ppc64asm.BCLRL)) {
 		fmt.Println("----- found bclrl instruction")
 		regs, err := dbp.CurrentThread().Registers()
 		if err != nil {
 			return err
 		}
-		fmt.Println("LR after: ", pc)
-		pc = regs.LR()
-		fn = dbp.BinInfo().PCToFunc(pc)
-		fmt.Println("LR before: ", pc)
-		fmt.Println("FN: ", fn)
-		fmt.Printf("lr: %#x fn: %s\n", regs.LR(), fn.Name)
+		lr := regs.LR()
+		fn = dbp.BinInfo().PCToFunc(lr)
+		fmt.Printf("pc: %#x lr: %#x fn: %s\n", regs.PC(), regs.LR(), fn.Name)
 	}
 
 	// Skip unexported runtime functions
