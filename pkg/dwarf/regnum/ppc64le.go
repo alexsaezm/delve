@@ -2,6 +2,11 @@ package regnum
 
 import "fmt"
 
+// The mapping between hardware registers and DWARF registers is specified
+// in the 64-Bit ELF V2 ABI Specification of the Power Architecture in section
+// 2.4 DWARF Definition
+// https://openpowerfoundation.org/specifications/64bitelfabi/
+
 const (
 	PPC64LE_R0  = 0  // General Purpose Registers: from R0 to R31
 	PPC64LE_F0  = 0  // Floating point registers: from F0 to F31
