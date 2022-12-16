@@ -78,7 +78,6 @@ func ppc64leFixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Bina
 
 	// Checks if we marked the function as a crosscall and if we are currently in it
 	if a.crosscall2fn != nil && pc >= a.crosscall2fn.Entry && pc < a.crosscall2fn.End {
-		fmt.Println("------------- crosscall2")
 		rule := fctxt.CFA
 		if rule.Offset == crosscall2SPOffsetBad {
 			// Linux support only
@@ -118,8 +117,6 @@ func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) boo
 			newsp, _ := readUintRaw(it.mem, it.regs.SP()+8*24, int64(it.bi.Arch.PtrSize()))
 			newbp, _ := readUintRaw(it.mem, it.regs.SP()+8*14, int64(it.bi.Arch.PtrSize()))
 			newlr, _ := readUintRaw(it.mem, it.regs.SP()+16, int64(it.bi.Arch.PtrSize()))
-			panic("crosscall2")
-			fmt.Println("crosscall2", it.regs.SP(), newsp, newbp, newlr)
 			if it.regs.Reg(it.regs.BPRegNum) != nil {
 				it.regs.Reg(it.regs.BPRegNum).Uint64Val = newbp
 			} else {
@@ -150,7 +147,6 @@ func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) boo
 	}
 	switch fn.Name {
 	case "runtime.asmcgocall":
-		fmt.Println("entering runtime.asmcgocall branch")
 		if !it.systemstack {
 			return false
 		}
@@ -208,12 +204,8 @@ func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) boo
 }
 
 // ppc64leRegSize returns the size (in bytes) of register regnum.
-func ppc64leRegSize(rn uint64) int {
-	// FIXME(alexsaezm) Fix this, this is clearly not correct
-	if rn == regnum.PPC64LE_PC {
-		return 8
-	}
-	return 8
+func ppc64leRegSize(regnum uint64) int {
+	return 8 // each register is a 64-bit register
 }
 
 func ppc64leRegistersToDwarfRegisters(staticBase uint64, regs Registers) *op.DwarfRegisters {
@@ -233,5 +225,6 @@ func ppc64leAddrAndStackRegsToDwarfRegisters(staticBase, pc, sp, bp, lr uint64) 
 }
 
 func ppc64leDwarfRegisterToString(i int, reg *op.DwarfRegister) (name string, floatingPoint bool, repr string) {
+	name = regnum.PPC64LEToName(uint64(i))
 	return name, false, fmt.Sprintf("%#x", reg.Bytes)
 }

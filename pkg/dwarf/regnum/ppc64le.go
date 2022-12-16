@@ -18,7 +18,6 @@ const (
 	PPC64LE_LR  = 65 // Link register
 )
 
-// PPC64LEToName TODO(alexsaezm) Verify why this method is never called.
 func PPC64LEToName(num uint64) string {
 	switch {
 	case num <= 31:
@@ -39,8 +38,7 @@ func PPC64LEToName(num uint64) string {
 }
 
 func PPC64LEMaxRegNum() uint64 {
-	// TODO(alexsaezm) Find the exact number
-	return 100
+	return 65
 }
 
 var PPC64LENameToDwarf = func() map[string]int {
