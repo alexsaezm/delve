@@ -38,28 +38,6 @@ type PPC64LEPtraceRegs struct {
 	Result    uint64
 }
 
-// String TODO(alexsaezm) Remove this method, I'm only using it for debugging
-func (regs *PPC64LEPtraceRegs) String() string {
-	gprs := "\n"
-	for i, r := range regs.Gpr {
-		gprs += fmt.Sprintf("\t\t - gpr[%d]: %d\n", i, r)
-	}
-	return fmt.Sprintf("Registers:\n"+
-		"\t - Gpr: %s"+
-		"\t - Nip: %#x\n"+
-		"\t - Msr: %d\n"+
-		"\t - Orig_gpr3: %d\n"+
-		"\t - Ctr: %d\n"+
-		"\t - Link: %d\n"+
-		"\t - Xer: %d\n"+
-		"\t - Ccr: %d\n"+
-		"\t - Softe: %d\n"+
-		"\t - Trap: %d\n"+
-		"\t - Dar: %d\n"+
-		"\t - Dsisr: %d\n"+
-		"\t - Result: %d\n", gprs, regs.Nip, regs.Msr, regs.Orig_gpr3, regs.Ctr, regs.Link, regs.Xer, regs.Ccr, regs.Softe, regs.Trap, regs.Dar, regs.Dsisr, regs.Result)
-}
-
 // PC returns the value of the NIP register
 // Also called the IAR/Instruction Address Register or NIP/Next Instruction Pointer
 func (r *PPC64LERegisters) PC() uint64 {
