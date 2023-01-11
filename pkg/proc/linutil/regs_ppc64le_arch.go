@@ -2,7 +2,6 @@ package linutil
 
 import (
 	"fmt"
-
 	"github.com/go-delve/delve/pkg/proc"
 )
 
@@ -141,8 +140,25 @@ func (r *PPC64LERegisters) Slice(floatingPoint bool) ([]proc.Register, error) {
 
 // Copy returns a copy of these registers that is guaranteed not to change.
 func (r *PPC64LERegisters) Copy() (proc.Registers, error) {
-	//TODO(alexsaezm) implement me, not in use yet.
-	panic("implement me: Copy")
+	if r.loadFpRegs != nil {
+		err := r.loadFpRegs(r)
+		r.loadFpRegs = nil
+		if err != nil {
+			return nil, err
+		}
+	}
+	var rr PPC64LERegisters
+	rr.Regs = &PPC64LEPtraceRegs{}
+	*(rr.Regs) = *(r.Regs)
+	if r.Fpregs != nil {
+		rr.Fpregs = make([]proc.Register, len(r.Fpregs))
+		copy(rr.Fpregs, r.Fpregs)
+	}
+	if r.Fpregset != nil {
+		rr.Fpregset = make([]byte, len(r.Fpregset))
+		copy(rr.Fpregset, r.Fpregset)
+	}
+	return &rr, nil
 }
 
 type PPC64LEPtraceFpRegs struct {
