@@ -7,14 +7,16 @@ import (
 )
 
 func (t *nativeThread) fpRegisters() ([]proc.Register, []byte, error) {
+	var regs []proc.Register
+	var fpregs linutil.PPC64LEPtraceFpRegs
 	var err error
-	var ppc64leFpregs linutil.PPC64LEPtraceFpRegs
-	t.dbp.execPtraceFunc(func() { ppc64leFpregs.Fp, err = ptraceGetFpRegset(t.ID) })
-	fpregs := ppc64leFpregs.Decode()
+
+	t.dbp.execPtraceFunc(func() { fpregs.Fp, err = ptraceGetFpRegset(t.ID) })
+	regs = fpregs.Decode()
 	if err != nil {
 		err = fmt.Errorf("could not get floating point registers: %v", err.Error())
 	}
-	return fpregs, ppc64leFpregs.Fp, err
+	return regs, fpregs.Fp, err
 }
 
 func (t *nativeThread) restoreRegisters(savedRegs proc.Registers) error {

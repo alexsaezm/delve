@@ -162,7 +162,6 @@ func (r *PPC64LERegisters) Copy() (proc.Registers, error) {
 }
 
 type PPC64LEPtraceFpRegs struct {
-	//TODO(alexsaezm) Figure out why I need this struct
 	Fp []byte
 }
 
