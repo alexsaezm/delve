@@ -158,9 +158,7 @@ func (g *G) Stacktrace(depth int, opts StacktraceOptions) ([]Stackframe, error) 
 	if err != nil {
 		return nil, err
 	}
-	if it.err != nil {
-		return nil, it.err
-	}
+
 	if opts&StacktraceReadDefers != 0 {
 		g.readDefers(frames)
 	}
@@ -204,19 +202,7 @@ func newStackIterator(bi *BinaryInfo, mem MemoryReadWriter, regs op.DwarfRegiste
 	if g != nil {
 		systemstack = g.SystemStack
 	}
-	return &stackIterator{
-		pc:          regs.PC(),
-		regs:        regs,
-		top:         true,
-		bi:          bi,
-		mem:         mem,
-		err:         nil,
-		atend:       false,
-		stackhi:     stackhi,
-		systemstack: systemstack,
-		g:           g,
-		opts:        opts,
-	}
+	return &stackIterator{pc: regs.PC(), regs: regs, top: true, bi: bi, mem: mem, err: nil, atend: false, stackhi: stackhi, systemstack: systemstack, g: g, opts: opts}
 }
 
 // Next points the iterator to the next stack frame.
