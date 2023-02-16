@@ -409,9 +409,6 @@ func (it *stackIterator) appendInlineCalls(frames []Stackframe, frame Stackframe
 // it.regs.CFA; the caller has to eventually switch it.regs when the iterator
 // advances to the next frame.
 func (it *stackIterator) advanceRegs() (callFrameRegs op.DwarfRegisters, ret uint64, retaddr uint64) {
-	if it.frame.Current.Fn != nil {
-		fmt.Println("fname", it.frame.Current.Fn.Name)
-	}
 	fde, err := it.bi.frameEntries.FDEForPC(it.pc)
 	var framectx *frame.FrameContext
 	if _, nofde := err.(*frame.ErrNoFDEForPC); nofde {
