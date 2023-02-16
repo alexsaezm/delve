@@ -6,13 +6,13 @@
 #define BREAKPOINT asm("int3;")
 #elif __i386__
 #define BREAKPOINT asm("int3;")
+#elif __PPC64__
+#define BREAKPOINT asm("tw 31,0,0;")
 #elif __aarch64__
 #ifdef WIN32
 #define BREAKPOINT asm("brk 0xF000;")
 #else
 #define BREAKPOINT asm("brk 0;")
-#elif __PPC64__
-#define BREAKPOINT asm("tw 31,0,0;")
 #endif
 #endif
 
