@@ -1594,7 +1594,6 @@ func (bi *BinaryInfo) setGStructOffsetElf(image *Image, exe *elf.File, wg *sync.
 		bi.gStructOffset = tlsg.Value + uint64(bi.Arch.PtrSize()*2) + ((tls.Vaddr - uint64(bi.Arch.PtrSize()*2)) & (tls.Align - 1))
 
 	case elf.EM_PPC64:
-		// TODO(alexsaezm) Complete this
 		_ = getSymbol(image, bi.logger, exe, "runtime.tls_g")
 
 	default:

@@ -21,8 +21,8 @@ func PPC64LEArch(goos string) *Arch {
 		ptrSize:                          8,
 		maxInstructionLength:             4,
 		breakpointInstruction:            ppc64leBreakInstruction,
-		breakInstrMovesPC:                false, // TODO(alexsaezm) Verify if the break instruction moves the PC
-		derefTLS:                         false, // TODO(alexsaezm) Verify how the TLS behaves. Chapter 3.7 of the ELF V2 ABI Specification
+		breakInstrMovesPC:                false,
+		derefTLS:                         false, // Chapter 3.7 of the ELF V2 ABI Specification
 		prologues:                        prologuesPPC64LE,
 		fixFrameUnwindContext:            ppc64leFixFrameUnwindContext,
 		switchStack:                      ppc64leSwitchStack,
