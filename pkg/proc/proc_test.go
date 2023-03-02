@@ -3563,6 +3563,7 @@ func TestSystemstackStacktrace(t *testing.T) {
 		frames, err := g.Stacktrace(100, 0)
 		assertNoError(err, t, "stacktrace")
 		logStacktrace(t, p, frames)
+		fmt.Printf("%#v\n", frames[0])
 		m := stacktraceCheck(t, []string{"!runtime.startpanic_m", "runtime.gopanic", "main.main"}, frames)
 		if m == nil {
 			t.Fatal("see previous loglines")
@@ -5499,6 +5500,7 @@ func TestVariablesWithExternalLinking(t *testing.T) {
 func TestWatchpointsBasic(t *testing.T) {
 	skipOn(t, "not implemented", "freebsd")
 	skipOn(t, "not implemented", "386")
+	skipOn(t, "not implemented", "ppc64le")
 	skipOn(t, "see https://github.com/go-delve/delve/issues/2768", "windows")
 	protest.AllowRecording(t)
 

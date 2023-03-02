@@ -1,7 +1,6 @@
 package native
 
 import (
-	"errors"
 	"github.com/go-delve/delve/pkg/proc"
 )
 
@@ -13,13 +12,7 @@ func (t *nativeThread) findHardwareBreakpoint() (*proc.Breakpoint, error) {
 
 func (t *nativeThread) writeHardwareBreakpoint(addr uint64, wtype proc.WatchType, idx uint8) error {
 	// TODO(alexsaezm) Implement writeHardwareBreakpoint
-	wpstate, err := t.getWatchpoints()
-	if err != nil {
-		return err
-	}
-	if idx >= wpstate.num {
-		return errors.New("hardware breakpoints exhausted")
-	}
+	panic("hardware breakpoints not implemented on ppc64le")
 	return nil
 }
 
