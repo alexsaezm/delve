@@ -2,6 +2,7 @@ package native
 
 import (
 	"fmt"
+
 	"github.com/go-delve/delve/pkg/proc"
 	"github.com/go-delve/delve/pkg/proc/linutil"
 )
@@ -20,7 +21,5 @@ func (t *nativeThread) fpRegisters() ([]proc.Register, []byte, error) {
 }
 
 func (t *nativeThread) restoreRegisters(savedRegs proc.Registers) error {
-	// TODO(alexsaezm) Implement restoreRegisters
 	panic("Unimplemented restoreRegisters method in threads_linux_ppc64le.go")
-	return nil
 }
