@@ -479,7 +479,7 @@ func (it *stackIterator) executeFrameRegRule(regnum uint64, rule frame.DWRule, c
 		return nil, nil
 	case frame.RuleSameVal:
 		if it.regs.Reg(regnum) == nil {
-			return nil, fmt.Errorf("register %d undefined", regnum)
+			return nil, nil
 		}
 		reg := *it.regs.Reg(regnum)
 		return &reg, nil
