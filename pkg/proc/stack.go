@@ -471,7 +471,6 @@ func (it *stackIterator) advanceRegs() (callFrameRegs op.DwarfRegisters, ret uin
 }
 
 func (it *stackIterator) executeFrameRegRule(regnum uint64, rule frame.DWRule, cfa int64) (*op.DwarfRegister, error) {
-	// fmt.Printf("executeFrameRegRule: regnum=%d, rule=%v, cfa=%d\n", regnum, rule, cfa)
 	switch rule.Rule {
 	default:
 		fallthrough
