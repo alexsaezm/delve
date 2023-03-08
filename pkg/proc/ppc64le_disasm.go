@@ -42,7 +42,6 @@ func ppc64leAsmDecode(asmInst *AsmInstruction, mem []byte, regs *op.DwarfRegiste
 	asmInst.Inst = (*ppc64ArchInst)(&inst)
 	asmInst.Kind = OtherInstruction
 
-	// TODO(alexsaezm) Review the opcodes, there's a lot more
 	switch inst.Op {
 	case ppc64asm.BL, ppc64asm.BLA, ppc64asm.BCL, ppc64asm.BCLA, ppc64asm.BCLR, ppc64asm.BCLRL, ppc64asm.BCCTRL, ppc64asm.BCTARL:
 		// Pages 38-40 Book I v3.0

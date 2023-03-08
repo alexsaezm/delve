@@ -98,7 +98,6 @@ func ppc64leFixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Bina
 const ppc64cgocallSPOffsetSaveSlot = 32
 const ppc64prevG0schedSPOffsetSaveSlot = 40
 
-// TODO(alexsaezm) Review this method
 func ppc64leSwitchStack(it *stackIterator, callFrameRegs *op.DwarfRegisters) bool {
 	if it.frame.Current.Fn == nil && it.systemstack && it.g != nil && it.top {
 		it.switchToGoroutineStack()
