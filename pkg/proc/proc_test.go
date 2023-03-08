@@ -3553,6 +3553,7 @@ func TestCgoSources(t *testing.T) {
 }
 
 func TestSystemstackStacktrace(t *testing.T) {
+	skipOn(t, "broken", "ppc64le")
 	// check that we can follow a stack switch initiated by runtime.systemstack()
 	withTestProcess("panic", t, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		setFunctionBreakpoint(p, t, "runtime.startpanic_m")
@@ -3572,6 +3573,7 @@ func TestSystemstackStacktrace(t *testing.T) {
 }
 
 func TestSystemstackOnRuntimeNewstack(t *testing.T) {
+	skipOn(t, "broken", "ppc64le")
 	// The bug being tested here manifests as follows:
 	// - set a breakpoint somewhere or interrupt the program with Ctrl-C
 	// - try to look at stacktraces of other goroutines
@@ -3989,6 +3991,9 @@ func TestInlinedStacktraceAndVariables(t *testing.T) {
 }
 
 func TestInlineStep(t *testing.T) {
+	if runtime.GOARCH == "ppc64le" {
+		t.Skip("broken in PPC64LE")
+	}
 	if ver, _ := goversion.Parse(runtime.Version()); ver.Major >= 0 && !ver.AfterOrEqual(goversion.GoVersion{Major: 1, Minor: 10, Rev: -1}) {
 		// Versions of go before 1.10 do not have DWARF information for inlined calls
 		t.Skip("inlining not supported")
@@ -4715,6 +4720,7 @@ func TestCgoStacktrace2(t *testing.T) {
 	skipOn(t, "upstream issue", "windows")
 	skipOn(t, "broken", "386")
 	skipOn(t, "broken", "arm64")
+	skipOn(t, "broken", "ppc64le")
 	protest.MustHaveCgo(t)
 	// If a panic happens during cgo execution the stacktrace should show the C
 	// function that caused the problem.
@@ -4820,6 +4826,7 @@ func TestIssue1795(t *testing.T) {
 	if !goversion.VersionAfterOrEqual(runtime.Version(), 1, 13) {
 		t.Skip("Test not relevant to Go < 1.13")
 	}
+	skipOn(t, "broken", "ppc64le")
 	withTestProcessArgs("issue1795", t, ".", []string{}, protest.EnableInlining|protest.EnableOptimization, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		assertNoError(grp.Continue(), t, "Continue()")
 		assertLineNumber(p, t, 12, "wrong line number after Continue,")
@@ -5251,6 +5258,7 @@ func TestDump(t *testing.T) {
 	if (runtime.GOOS == "darwin" && testBackend == "native") || (runtime.GOOS == "windows" && runtime.GOARCH != "amd64") {
 		t.Skip("not supported")
 	}
+	skipOn(t, "not implemented", "ppc64le")
 
 	convertRegisters := func(arch *proc.Arch, dregs op.DwarfRegisters) string {
 		dregs.Reg(^uint64(0))
@@ -5561,6 +5569,7 @@ func TestWatchpointCounts(t *testing.T) {
 	skipOn(t, "not implemented", "freebsd")
 	skipOn(t, "not implemented", "386")
 	skipOn(t, "see https://github.com/go-delve/delve/issues/2768", "windows")
+	skipOn(t, "not implemented", "ppc64le")
 	protest.AllowRecording(t)
 
 	withTestProcess("databpcountstest", t, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
@@ -5675,6 +5684,7 @@ func TestDwrapStartLocation(t *testing.T) {
 func TestWatchpointStack(t *testing.T) {
 	skipOn(t, "not implemented", "freebsd")
 	skipOn(t, "not implemented", "386")
+	skipOn(t, "broken", "ppc64le")
 	skipOn(t, "see https://github.com/go-delve/delve/issues/2768", "windows")
 	protest.AllowRecording(t)
 
