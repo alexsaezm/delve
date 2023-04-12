@@ -5881,6 +5881,8 @@ func TestNilPtrDerefInBreakInstr(t *testing.T) {
 		asmfile = "main_arm64.s"
 	case "386":
 		asmfile = "main_386.s"
+	case "ppc64le":
+		asmfile = "main_ppc64le.s"
 	default:
 		t.Fatalf("assembly file for %s not provided", runtime.GOARCH)
 	}
