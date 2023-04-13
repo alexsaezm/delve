@@ -9,9 +9,9 @@ import "fmt"
 
 const (
 	PPC64LE_R0  = 0  // General Purpose Registers: from R0 to R31
-	PPC64LE_F0  = 0  // Floating point registers: from F0 to F31
-	PPC64LE_V0  = 0  // Vector (Altivec/VMX) registers: from V0 to V31
-	PPC64LE_VS0 = 0  // Vector Scalar (VSX) registers: from VS0 to VS63
+	PPC64LE_F0  = 32 // Floating point registers: from F0 to F31
+	PPC64LE_V0  = 64 // Vector (Altivec/VMX) registers: from V0 to V31
+	PPC64LE_VS0 = 96 // Vector Scalar (VSX) registers: from VS0 to VS63
 	PPC64LE_CR0 = 0  // Condition Registers: from CR0 to CR7
 	PPC64LE_SP  = 1  // Stack frame pointer: Gpr[1]
 	PPC64LE_PC  = 12 // The documentation refers to this as the CIA (Current Instruction Address)
@@ -20,25 +20,27 @@ const (
 
 func PPC64LEToName(num uint64) string {
 	switch {
-	case num <= 31:
-		return fmt.Sprintf("R%d", num)
-	case num <= 62:
-		return fmt.Sprintf("F%d", num)
+	case PPC64LE_R0 <= num && num <= PPC64LE_F0-1:
+		return fmt.Sprintf("r%d", int(num-PPC64LE_R0))
+	case PPC64LE_F0 <= num && num <= PPC64LE_V0-1:
+		return fmt.Sprintf("f%d", int(num-PPC64LE_F0))
+	case PPC64LE_V0 <= num && num <= PPC64LE_VS0-1:
+		return fmt.Sprintf("v%d", int(num-PPC64LE_V0))
+	case PPC64LE_VS0 <= num && num <= PPC64LE_VS0+63:
+		return fmt.Sprintf("vs%d", int(num-PPC64LE_VS0))
 	case num == PPC64LE_SP:
 		return "SP"
 	case num == PPC64LE_PC:
 		return "PC"
 	case num == PPC64LE_LR:
-		return "Link"
-	case num >= PPC64LE_V0 && num <= 108:
-		return fmt.Sprintf("V%d", num-64)
+		return "LR"
 	default:
 		return fmt.Sprintf("unknown%d", num)
 	}
 }
 
 func PPC64LEMaxRegNum() uint64 {
-	return 65
+	return 160
 }
 
 var PPC64LENameToDwarf = func() map[string]int {
