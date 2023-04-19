@@ -377,7 +377,7 @@ func FirstPCAfterPrologue(p Process, fn *Function, sameline bool) (uint64, error
 	}
 
 	pc, _, line, ok := fn.cu.lineInfo.PrologueEndPC(fn.Entry, fn.End)
-	if ok && false {
+	if ok {
 		if !sameline {
 			return pc, nil
 		}
