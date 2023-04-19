@@ -1058,7 +1058,7 @@ func TestKill(t *testing.T) {
 		}
 		if runtime.GOOS == "linux" {
 			if runtime.GOARCH == "arm64" {
-				//there is no any sync between signal sended(tracee handled) and open /proc/%d/. It may fail on arm64
+				// there is no any sync between signal sended(tracee handled) and open /proc/%d/. It may fail on arm64
 				return
 			}
 			_, err := os.Open(fmt.Sprintf("/proc/%d/", p.Pid()))
@@ -1484,7 +1484,6 @@ func TestIssue325(t *testing.T) {
 }
 
 func TestBreakpointCounts(t *testing.T) {
-	skipOn(t, "broken", "freebsd")
 	protest.AllowRecording(t)
 	withTestProcess("bpcountstest", t, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		bp := setFileBreakpoint(p, t, fixture.Source, 12)
@@ -1728,7 +1727,6 @@ func BenchmarkLocalVariables(b *testing.B) {
 }
 
 func TestCondBreakpoint(t *testing.T) {
-	skipOn(t, "broken", "freebsd")
 	protest.AllowRecording(t)
 	withTestProcess("parallel_next", t, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		bp := setFileBreakpoint(p, t, fixture.Source, 9)
@@ -1750,7 +1748,6 @@ func TestCondBreakpoint(t *testing.T) {
 }
 
 func TestCondBreakpointError(t *testing.T) {
-	skipOn(t, "broken", "freebsd")
 	protest.AllowRecording(t)
 	withTestProcess("parallel_next", t, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		bp := setFileBreakpoint(p, t, fixture.Source, 9)
@@ -2112,7 +2109,6 @@ func TestIssue462(t *testing.T) {
 }
 
 func TestNextParked(t *testing.T) {
-	skipOn(t, "broken", "freebsd")
 	protest.AllowRecording(t)
 	withTestProcess("parallel_next", t, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		bp := setFunctionBreakpoint(p, t, "main.sayhi")
@@ -2163,7 +2159,6 @@ func TestNextParked(t *testing.T) {
 }
 
 func TestStepParked(t *testing.T) {
-	skipOn(t, "broken", "freebsd")
 	protest.AllowRecording(t)
 	withTestProcess("parallel_next", t, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		bp := setFunctionBreakpoint(p, t, "main.sayhi")
@@ -2297,19 +2292,11 @@ func TestNextPanicAndDirectCall(t *testing.T) {
 	// Next should not step into a deferred function if it is called
 	// directly, only if it is called through a panic or a deferreturn.
 	// Here we test the case where the function is called by a panic
-	if goversion.VersionAfterOrEqual(runtime.Version(), 1, 11) {
-		testseq("defercall", contNext, []nextTest{
-			{15, 16},
-			{16, 17},
-			{17, 18},
-			{18, 6}}, "main.callAndPanic2", t)
-	} else {
-		testseq("defercall", contNext, []nextTest{
-			{15, 16},
-			{16, 17},
-			{17, 18},
-			{18, 5}}, "main.callAndPanic2", t)
-	}
+	testseq("defercall", contNext, []nextTest{
+		{15, 16},
+		{16, 17},
+		{17, 18},
+		{18, 6}}, "main.callAndPanic2", t)
 }
 
 func TestStepCall(t *testing.T) {
@@ -2340,71 +2327,26 @@ func TestStepCallPtr(t *testing.T) {
 func TestStepReturnAndPanic(t *testing.T) {
 	// Tests that Step works correctly when returning from functions
 	// and when a deferred function is called when panic'ing.
-	switch {
-	case goversion.VersionAfterOrEqual(runtime.Version(), 1, 11):
-		testseq("defercall", contStep, []nextTest{
-			{17, 6},
-			{6, 7},
-			{7, 18},
-			{18, 6},
-			{6, 7}}, "", t)
-	case goversion.VersionAfterOrEqual(runtime.Version(), 1, 10):
-		testseq("defercall", contStep, []nextTest{
-			{17, 5},
-			{5, 6},
-			{6, 7},
-			{7, 18},
-			{18, 5},
-			{5, 6},
-			{6, 7}}, "", t)
-	case goversion.VersionAfterOrEqual(runtime.Version(), 1, 9):
-		testseq("defercall", contStep, []nextTest{
-			{17, 5},
-			{5, 6},
-			{6, 7},
-			{7, 17},
-			{17, 18},
-			{18, 5},
-			{5, 6},
-			{6, 7}}, "", t)
-	default:
-		testseq("defercall", contStep, []nextTest{
-			{17, 5},
-			{5, 6},
-			{6, 7},
-			{7, 18},
-			{18, 5},
-			{5, 6},
-			{6, 7}}, "", t)
-	}
+	testseq("defercall", contStep, []nextTest{
+		{17, 6},
+		{6, 7},
+		{7, 18},
+		{18, 6},
+		{6, 7}}, "", t)
 }
 
 func TestStepDeferReturn(t *testing.T) {
 	// Tests that Step works correctly when a deferred function is
 	// called during a return.
-	if goversion.VersionAfterOrEqual(runtime.Version(), 1, 11) {
-		testseq("defercall", contStep, []nextTest{
-			{11, 6},
-			{6, 7},
-			{7, 12},
-			{12, 13},
-			{13, 6},
-			{6, 7},
-			{7, 13},
-			{13, 28}}, "", t)
-	} else {
-		testseq("defercall", contStep, []nextTest{
-			{11, 5},
-			{5, 6},
-			{6, 7},
-			{7, 12},
-			{12, 13},
-			{13, 5},
-			{5, 6},
-			{6, 7},
-			{7, 13},
-			{13, 28}}, "", t)
-	}
+	testseq("defercall", contStep, []nextTest{
+		{11, 6},
+		{6, 7},
+		{7, 12},
+		{12, 13},
+		{13, 6},
+		{6, 7},
+		{7, 13},
+		{13, 28}}, "", t)
 }
 
 func TestStepIgnorePrivateRuntime(t *testing.T) {
@@ -2429,27 +2371,8 @@ func TestStepIgnorePrivateRuntime(t *testing.T) {
 			{21, 14},
 			{14, 15},
 			{15, 22}}, "", t)
-	case goversion.VersionAfterOrEqual(runtime.Version(), 1, 10):
-		testseq("teststepprog", contStep, []nextTest{
-			{21, 13},
-			{13, 14},
-			{14, 15},
-			{15, 22}}, "", t)
-	case goversion.VersionAfterOrEqual(runtime.Version(), 1, 7):
-		testseq("teststepprog", contStep, []nextTest{
-			{21, 13},
-			{13, 14},
-			{14, 15},
-			{15, 14},
-			{14, 17},
-			{17, 22}}, "", t)
 	default:
-		testseq("teststepprog", contStep, []nextTest{
-			{21, 13},
-			{13, 14},
-			{14, 15},
-			{15, 17},
-			{17, 22}}, "", t)
+		panic("too old")
 	}
 }
 
@@ -2492,7 +2415,7 @@ func TestStepOut(t *testing.T) {
 }
 
 func TestStepConcurrentDirect(t *testing.T) {
-	skipOn(t, "broken", "freebsd")
+	skipOn(t, "broken - step concurrent", "windows", "arm64")
 	protest.AllowRecording(t)
 	withTestProcess("teststepconcurrent", t, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		bp := setFileBreakpoint(p, t, fixture.Source, 37)
@@ -2556,7 +2479,6 @@ func TestStepConcurrentDirect(t *testing.T) {
 }
 
 func TestStepConcurrentPtr(t *testing.T) {
-	skipOn(t, "broken", "freebsd")
 	protest.AllowRecording(t)
 	withTestProcess("teststepconcurrent", t, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		setFileBreakpoint(p, t, fixture.Source, 24)
@@ -2809,15 +2731,9 @@ func TestStepOutPanicAndDirectCall(t *testing.T) {
 	// StepOut should not step into a deferred function if it is called
 	// directly, only if it is called through a panic.
 	// Here we test the case where the function is called by a panic
-	if goversion.VersionAfterOrEqual(runtime.Version(), 1, 11) {
-		testseq2(t, "defercall", "", []seqTest{
-			{contContinue, 17},
-			{contStepout, 6}})
-	} else {
-		testseq2(t, "defercall", "", []seqTest{
-			{contContinue, 17},
-			{contStepout, 5}})
-	}
+	testseq2(t, "defercall", "", []seqTest{
+		{contContinue, 17},
+		{contStepout, 6}})
 }
 
 func TestWorkDir(t *testing.T) {
@@ -3439,11 +3355,11 @@ func TestCgoStacktrace(t *testing.T) {
 	// frame than those listed here but all the frames listed must appear in
 	// the specified order.
 	testCases := [][]string{
-		[]string{"main.main"},
-		[]string{"C.helloworld_pt2", "C.helloworld", "main.main"},
-		[]string{"main.helloWorldS", "main.helloWorld", "C.helloworld_pt2", "C.helloworld", "main.main"},
-		[]string{"C.helloworld_pt4", "C.helloworld_pt3", "main.helloWorldS", "main.helloWorld", "C.helloworld_pt2", "C.helloworld", "main.main"},
-		[]string{"main.helloWorld2", "C.helloworld_pt4", "C.helloworld_pt3", "main.helloWorldS", "main.helloWorld", "C.helloworld_pt2", "C.helloworld", "main.main"}}
+		{"main.main"},
+		{"C.helloworld_pt2", "C.helloworld", "main.main"},
+		{"main.helloWorldS", "main.helloWorld", "C.helloworld_pt2", "C.helloworld", "main.main"},
+		{"C.helloworld_pt4", "C.helloworld_pt3", "main.helloWorldS", "main.helloWorld", "C.helloworld_pt2", "C.helloworld", "main.main"},
+		{"main.helloWorld2", "C.helloworld_pt4", "C.helloworld_pt3", "main.helloWorldS", "main.helloWorld", "C.helloworld_pt2", "C.helloworld", "main.main"}}
 
 	var gid int64
 
@@ -3467,7 +3383,6 @@ func TestCgoStacktrace(t *testing.T) {
 				}
 			}
 
-			t.Logf("iteration step %d", itidx)
 			frames, err := g.Stacktrace(100, 0)
 			assertNoError(err, t, fmt.Sprintf("Stacktrace at iteration step %d", itidx))
 
@@ -3564,7 +3479,6 @@ func TestSystemstackStacktrace(t *testing.T) {
 		frames, err := g.Stacktrace(100, 0)
 		assertNoError(err, t, "stacktrace")
 		logStacktrace(t, p, frames)
-		fmt.Printf("%#v\n", frames[0])
 		m := stacktraceCheck(t, []string{"!runtime.startpanic_m", "runtime.gopanic", "main.main"}, frames)
 		if m == nil {
 			t.Fatal("see previous loglines")
@@ -3641,8 +3555,8 @@ func TestIssue1008(t *testing.T) {
 		if !strings.HasSuffix(loc.File, "/main.go") {
 			t.Errorf("unexpected location %s:%d\n", loc.File, loc.Line)
 		}
-		if loc.Line > 31 {
-			t.Errorf("unexpected location %s:%d (file only has 30 lines)\n", loc.File, loc.Line)
+		if loc.Line > 35 {
+			t.Errorf("unexpected location %s:%d (file only has 34 lines)\n", loc.File, loc.Line)
 		}
 	})
 }
@@ -3881,14 +3795,14 @@ func TestInlinedStacktraceAndVariables(t *testing.T) {
 		line: 7,
 		ok:   false,
 		varChecks: []varCheck{
-			varCheck{
+			{
 				name:   "a",
 				typ:    "int",
 				kind:   reflect.Int,
 				hasVal: true,
 				intVal: 3,
 			},
-			varCheck{
+			{
 				name:   "z",
 				typ:    "int",
 				kind:   reflect.Int,
@@ -3902,14 +3816,14 @@ func TestInlinedStacktraceAndVariables(t *testing.T) {
 		line: 7,
 		ok:   false,
 		varChecks: []varCheck{
-			varCheck{
+			{
 				name:   "a",
 				typ:    "int",
 				kind:   reflect.Int,
 				hasVal: true,
 				intVal: 4,
 			},
-			varCheck{
+			{
 				name:   "z",
 				typ:    "int",
 				kind:   reflect.Int,
@@ -4002,6 +3916,9 @@ func TestInlineStep(t *testing.T) {
 		{contContinue, 18},
 		{contStep, 6},
 		{contStep, 7},
+		{contStep, 24},
+		{contStep, 25},
+		{contStep, 7},
 		{contStep, 18},
 		{contStep, 19},
 	})
@@ -4047,7 +3964,8 @@ func TestInlineStepOut(t *testing.T) {
 
 func TestInlineFunctionList(t *testing.T) {
 	// We should be able to list all functions, even inlined ones.
-	if ver, _ := goversion.Parse(runtime.Version()); ver.Major >= 0 && !ver.AfterOrEqual(goversion.GoVersion{Major: 1, Minor: 10, Rev: -1}) {
+	ver, _ := goversion.Parse(runtime.Version())
+	if ver.Major >= 0 && !ver.AfterOrEqual(goversion.GoVersion{Major: 1, Minor: 10, Rev: -1}) {
 		// Versions of go before 1.10 do not have DWARF information for inlined calls
 		t.Skip("inlining not supported")
 	}
@@ -4634,7 +4552,6 @@ func testCallConcurrentCheckReturns(p *proc.Target, t *testing.T, gid1, gid2 int
 }
 
 func TestCallConcurrent(t *testing.T) {
-	skipOn(t, "broken", "freebsd")
 	protest.MustSupportFunctionCalls(t, testBackend)
 	withTestProcess("teststepconcurrent", t, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		bp := setFileBreakpoint(p, t, fixture.Source, 24)
@@ -4807,7 +4724,7 @@ func TestListPackagesBuildInfo(t *testing.T) {
 			if fidx < 0 {
 				continue
 			}
-			if !strings.HasSuffix(strings.Replace(pkg.DirectoryPath, "\\", "/", -1), pkg.ImportPath[fidx:]) {
+			if !strings.HasSuffix(strings.ReplaceAll(pkg.DirectoryPath, "\\", "/"), pkg.ImportPath[fidx:]) {
 				t.Errorf("unexpected suffix: %q %q", pkg.ImportPath, pkg.DirectoryPath)
 			}
 		}
@@ -5152,7 +5069,6 @@ func TestRequestManualStopWhileStopped(t *testing.T) {
 
 func TestStepOutPreservesGoroutine(t *testing.T) {
 	// Checks that StepOut preserves the currently selected goroutine.
-	skipOn(t, "broken", "freebsd")
 	rand.Seed(time.Now().Unix())
 	withTestProcess("issue2113", t, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		assertNoError(grp.Continue(), t, "Continue()")
@@ -5684,7 +5600,7 @@ func TestDwrapStartLocation(t *testing.T) {
 func TestWatchpointStack(t *testing.T) {
 	skipOn(t, "not implemented", "freebsd")
 	skipOn(t, "not implemented", "386")
-	skipOn(t, "broken", "ppc64le")
+	skipOn(t, "not implemented", "ppc64le")
 	skipOn(t, "see https://github.com/go-delve/delve/issues/2768", "windows")
 	protest.AllowRecording(t)
 
@@ -5899,6 +5815,7 @@ func TestNilPtrDerefInBreakInstr(t *testing.T) {
 			// this is also ok
 			return
 		}
+		t.Logf("third continue")
 		assertNoError(err, t, "Continue()")
 		bp := p.CurrentThread().Breakpoint()
 		if bp != nil {

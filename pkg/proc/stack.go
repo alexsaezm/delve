@@ -158,7 +158,6 @@ func (g *G) Stacktrace(depth int, opts StacktraceOptions) ([]Stackframe, error) 
 	if err != nil {
 		return nil, err
 	}
-
 	if opts&StacktraceReadDefers != 0 {
 		g.readDefers(frames)
 	}
@@ -231,7 +230,6 @@ func (it *stackIterator) Next() bool {
 	it.top = false
 	it.pc = it.frame.Ret
 	it.regs = callFrameRegs
-
 	return true
 }
 
@@ -331,7 +329,6 @@ func (it *stackIterator) stacktrace(depth int) ([]Stackframe, error) {
 			break
 		}
 	}
-
 	if err := it.Err(); err != nil {
 		if len(frames) == 0 {
 			return nil, err

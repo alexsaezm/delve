@@ -310,8 +310,6 @@ func (dbp *nativeProcess) initialize(path string, debugInfoDirs []string) (*proc
 		// We disable asyncpreempt for the following reasons:
 		//  - on Windows asyncpreempt is incompatible with debuggers, see:
 		//    https://github.com/golang/go/issues/36494
-		//  - freebsd's backend is generally broken and asyncpreempt makes it even more so, see:
-		//    https://github.com/go-delve/delve/issues/1754
 		//  - on linux/arm64 asyncpreempt can sometimes restart a sequence of
 		//    instructions, if the sequence happens to contain a breakpoint it will
 		//    look like the breakpoint was hit twice when it was "logically" only
@@ -321,7 +319,7 @@ func (dbp *nativeProcess) initialize(path string, debugInfoDirs []string) (*proc
 		//	  with gdb once AsyncPreempt was enabled. While implementing the port,
 		//	  few tests failed while it was enabled, but cannot be warrantied that
 		//	  disabling it fixed the issues.
-		DisableAsyncPreempt: runtime.GOOS == "windows" || runtime.GOOS == "freebsd" || (runtime.GOOS == "linux" && runtime.GOARCH == "arm64") || (runtime.GOOS == "linux" && runtime.GOARCH == "ppc64le"),
+		DisableAsyncPreempt: runtime.GOOS == "windows" || (runtime.GOOS == "linux" && runtime.GOARCH == "arm64") || (runtime.GOOS == "linux" && runtime.GOARCH == "ppc64le"),
 
 		StopReason: stopReason,
 		CanDump:    runtime.GOOS == "linux" || runtime.GOOS == "freebsd" || (runtime.GOOS == "windows" && runtime.GOARCH == "amd64"),
