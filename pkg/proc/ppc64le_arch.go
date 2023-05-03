@@ -1,6 +1,7 @@
 package proc
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"strings"
@@ -44,7 +45,7 @@ func PPC64LEArch(goos string) *Arch {
 func ppc64leFixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *BinaryInfo) *frame.FrameContext {
 	a := bi.Arch
 	if a.sigreturnfn == nil {
-		a.sigreturnfn = bi.LookupFunc["runtime.sigreturn"]
+		a.sigreturnfn = bi.lookupOneFunc("runtime.sigreturn")
 	}
 	if fctxt == nil || (a.sigreturnfn != nil && pc >= a.sigreturnfn.Entry && pc < a.sigreturnfn.End) {
 		fmt.Println("nil frame context")
@@ -73,7 +74,7 @@ func ppc64leFixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Bina
 	}
 	if a.crosscall2fn == nil {
 		// This is used to fix issues with the c calling frames
-		a.crosscall2fn = bi.LookupFunc["crosscall2"]
+		a.crosscall2fn = bi.lookupOneFunc("crosscall2")
 	}
 
 	// Checks if we marked the function as a crosscall and if we are currently in it
@@ -225,5 +226,18 @@ func ppc64leAddrAndStackRegsToDwarfRegisters(staticBase, pc, sp, bp, lr uint64) 
 
 func ppc64leDwarfRegisterToString(i int, reg *op.DwarfRegister) (name string, floatingPoint bool, repr string) {
 	name = regnum.PPC64LEToName(uint64(i))
+
+	if reg == nil {
+		return name, false, ""
+	}
+
+	// TODO(alexsaezm): Right now the format is not as good as it could be.
+	if reg.Bytes != nil && name[0] == 'v' {
+		var out bytes.Buffer
+		fmt.Fprintf(&out, "%#x\n", reg.Bytes)
+		return name, true, out.String()
+	} else if reg.Bytes == nil || (reg.Bytes != nil && len(reg.Bytes) < 16) {
+		return name, false, fmt.Sprintf("%#016x", reg.Uint64Val)
+	}
 	return name, false, fmt.Sprintf("%#x", reg.Bytes)
 }

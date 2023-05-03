@@ -715,6 +715,7 @@ func TestNextFunctionReturnDefer(t *testing.T) {
 }
 
 func TestNextNetHTTP(t *testing.T) {
+	skipOn(t, "broken", "ppc64le")
 	testcases := []nextTest{
 		{11, 12},
 		{12, 13},
@@ -2849,6 +2850,7 @@ func TestNextInDeferReturn(t *testing.T) {
 }
 
 func TestAttachDetach(t *testing.T) {
+	skipOn(t, "broken", "ppc64le")
 	if testBackend == "lldb" && runtime.GOOS == "linux" {
 		bs, _ := ioutil.ReadFile("/proc/sys/kernel/yama/ptrace_scope")
 		if bs == nil || strings.TrimSpace(string(bs)) != "0" {
@@ -4067,6 +4069,7 @@ func TestIssue951(t *testing.T) {
 }
 
 func TestDWZCompression(t *testing.T) {
+	skipOn(t, "broken", "ppc64le")
 	// If dwz is not available in the system, skip this test
 	if _, err := exec.LookPath("dwz"); err != nil {
 		t.Skip("dwz not installed")

@@ -673,6 +673,7 @@ func traceCmd(cmd *cobra.Command, args []string) {
 					fmt.Fprintf(os.Stderr, "unable to set tracepoint on function %s: %#v\n", funcs[i], err)
 					continue
 				}
+				fmt.Fprintf(os.Stderr, "Addrs %#v\n", addrs)
 				for i := range addrs {
 					_, err = client.CreateBreakpoint(&api.Breakpoint{
 						Addr:        addrs[i],
