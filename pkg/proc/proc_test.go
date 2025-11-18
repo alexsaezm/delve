@@ -4470,6 +4470,19 @@ func BenchmarkConditionalBreakpoints(b *testing.B) {
 	})
 }
 
+func BenchmarkStacktrace(b *testing.B) {
+	withTestProcess("deepstack", b, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
+		setFunctionBreakpoint(p, b, "main.deepest")
+		assertNoError(grp.Continue(), b, "Continue()")
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_, err := proc.ThreadStacktrace(p, p.CurrentThread(), 1100)
+			assertNoError(err, b, "ThreadStacktrace()")
+		}
+		b.StopTimer()
+	})
+}
+
 func TestIssue1925(t *testing.T) {
 	// Calling a function should not leave cached goroutine information in an
 	// inconsistent state.

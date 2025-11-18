@@ -72,28 +72,7 @@ func amd64FixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Binary
 		// frame pointer when we get to runtime.sigreturn (which is what we do
 		// here).
 
-		return &frame.FrameContext{
-			RetAddrReg: regnum.AMD64_Rip,
-			Regs: map[uint64]frame.DWRule{
-				regnum.AMD64_Rip: {
-					Rule:   frame.RuleOffset,
-					Offset: int64(-a.PtrSize()),
-				},
-				regnum.AMD64_Rbp: {
-					Rule:   frame.RuleOffset,
-					Offset: int64(-2 * a.PtrSize()),
-				},
-				regnum.AMD64_Rsp: {
-					Rule:   frame.RuleValOffset,
-					Offset: 0,
-				},
-			},
-			CFA: frame.DWRule{
-				Rule:   frame.RuleCFA,
-				Reg:    regnum.AMD64_Rbp,
-				Offset: int64(2 * a.PtrSize()),
-			},
-		}
+		return frameContext(a)
 	}
 
 	if a.crosscall2fn == nil {
@@ -126,6 +105,31 @@ func amd64FixFrameUnwindContext(fctxt *frame.FrameContext, pc uint64, bi *Binary
 	}
 
 	return fctxt
+}
+
+func frameContext(a *Arch) *frame.FrameContext {
+	return &frame.FrameContext{
+		RetAddrReg: regnum.AMD64_Rip,
+		Regs: map[uint64]frame.DWRule{
+			regnum.AMD64_Rip: {
+				Rule:   frame.RuleOffset,
+				Offset: int64(-a.PtrSize()),
+			},
+			regnum.AMD64_Rbp: {
+				Rule:   frame.RuleOffset,
+				Offset: int64(-2 * a.PtrSize()),
+			},
+			regnum.AMD64_Rsp: {
+				Rule:   frame.RuleValOffset,
+				Offset: 0,
+			},
+		},
+		CFA: frame.DWRule{
+			Rule:   frame.RuleCFA,
+			Reg:    regnum.AMD64_Rbp,
+			Offset: int64(2 * a.PtrSize()),
+		},
+	}
 }
 
 // cgocallSPOffsetSaveSlot is the offset from systemstack.SP where

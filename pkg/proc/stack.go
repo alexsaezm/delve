@@ -13,6 +13,7 @@ import (
 	"github.com/go-delve/delve/pkg/dwarf/frame"
 	"github.com/go-delve/delve/pkg/dwarf/op"
 	"github.com/go-delve/delve/pkg/dwarf/reader"
+	"github.com/go-delve/delve/pkg/goversion"
 	"github.com/go-delve/delve/pkg/logflags"
 )
 
@@ -213,6 +214,8 @@ type stackIterator struct {
 	count int
 
 	opts StacktraceOptions
+
+	useFPFastPath bool // true if we can skip FDE lookup and use frame pointer unwinding
 }
 
 func newStackIterator(tgt *Target, bi *BinaryInfo, mem MemoryReadWriter, regs op.DwarfRegisters, stackhi uint64, g *G, opts StacktraceOptions) *stackIterator {
@@ -220,7 +223,10 @@ func newStackIterator(tgt *Target, bi *BinaryInfo, mem MemoryReadWriter, regs op
 	if g != nil {
 		systemstack = g.SystemStack
 	}
-	return &stackIterator{pc: regs.PC(), regs: regs, top: true, target: tgt, bi: bi, mem: mem, err: nil, atend: false, stackhi: stackhi, systemstack: systemstack, g: g, opts: opts}
+	// Determine if we can use frame pointer fast path (compute once, use many times)
+	producer := bi.Producer()
+	useFPFastPath := supportsReliableFramePointers(bi, producer)
+	return &stackIterator{pc: regs.PC(), regs: regs, top: true, target: tgt, bi: bi, mem: mem, err: nil, atend: false, stackhi: stackhi, systemstack: systemstack, g: g, opts: opts, useFPFastPath: useFPFastPath}
 }
 
 // Next points the iterator to the next stack frame.
@@ -498,6 +504,22 @@ func (it *stackIterator) appendInlineCalls(callback func(Stackframe) bool, frame
 	return callback(frame)
 }
 
+// supportsReliableFramePointers returns true if the binary was compiled with
+// reliable frame pointers that we can use for stack unwinding.
+func supportsReliableFramePointers(bi *BinaryInfo, producer string) bool {
+	// Only AMD64 currently supports the fast path
+	if bi.Arch.Name != "amd64" {
+		return false
+	}
+	// We need to know the producer (compiler/toolchain) version
+	if producer == "" {
+		return false
+	}
+
+	// Reliable frame pointers in Go are guaranteed from version 1.8 onwards.
+	return goversion.ProducerAfterOrEqual(producer, 1, 8)
+}
+
 // advanceRegs calculates the DwarfRegisters for a next stack frame
 // (corresponding to it.pc).
 //
@@ -510,16 +532,23 @@ func (it *stackIterator) appendInlineCalls(callback func(Stackframe) bool, frame
 func (it *stackIterator) advanceRegs() (callFrameRegs op.DwarfRegisters, ret uint64, retaddr uint64) {
 	logger := logflags.StackLogger()
 
-	fde, err := it.bi.frameEntries.FDEForPC(it.pc)
 	var framectx *frame.FrameContext
-	if _, nofde := err.(*frame.ErrNoFDEForPC); nofde {
+
+	if it.useFPFastPath {
+		// Fast path: skip FDE lookup, use frame pointer
 		framectx = it.bi.Arch.fixFrameUnwindContext(nil, it.pc, it.bi)
 	} else {
-		fctxt, err := fde.EstablishFrame(it.pc)
-		if err != nil {
-			logger.Errorf("Error executing Frame Debug Entry for PC %x: %v", it.pc, err)
+		// Slow path: existing DWARF FDE lookup
+		fde, err := it.bi.frameEntries.FDEForPC(it.pc)
+		if _, nofde := err.(*frame.ErrNoFDEForPC); nofde {
+			framectx = it.bi.Arch.fixFrameUnwindContext(nil, it.pc, it.bi)
+		} else {
+			fctxt, err := fde.EstablishFrame(it.pc)
+			if err != nil {
+				logger.Errorf("Error executing Frame Debug Entry for PC %x: %v", it.pc, err)
+			}
+			framectx = it.bi.Arch.fixFrameUnwindContext(fctxt, it.pc, it.bi)
 		}
-		framectx = it.bi.Arch.fixFrameUnwindContext(fctxt, it.pc, it.bi)
 	}
 
 	logger.Debugf("advanceRegs at %#x", it.pc)
